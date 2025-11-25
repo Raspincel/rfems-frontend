@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../../app/store";
 import { AuthState } from "../types";
-import { loginThunk } from "./thunks";
+import { loginThunk, logoutThunk } from "./thunks";
 
 const initialState: AuthState = {
   isLoggedIn: null,
@@ -13,10 +13,6 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    logout(state) {
-      state.isLoggedIn = false;
-      state.status = "idle";
-    },
     setIsLoggedIn(state, action: { payload: boolean }) {
       state.isLoggedIn = action.payload;
     },
@@ -33,6 +29,16 @@ const authSlice = createSlice({
       .addCase(loginThunk.rejected, (s, a) => {
         s.status = "failed";
         s.error = a.error.message || null;
+      })
+      .addCase(logoutThunk.fulfilled, (s) => {
+        s.isLoggedIn = false;
+        s.status = "idle";
+      })
+      .addCase(logoutThunk.rejected, (s, a) => {
+        s.error = a.error.message || null;
+      })
+      .addCase(logoutThunk.pending, (s) => {
+        s.status = "loading";
       });
   },
 });
@@ -40,6 +46,6 @@ const authSlice = createSlice({
 export const selectIsAuthenticated = (state: RootState) =>
   state.auth.isLoggedIn === true;
 
-export const { logout, setIsLoggedIn } = authSlice.actions;
+export const { setIsLoggedIn } = authSlice.actions;
 
 export default authSlice.reducer;

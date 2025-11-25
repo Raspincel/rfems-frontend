@@ -5,3 +5,5 @@ import {bindings} from '../models';
 export function IsLoggedIn():Promise<boolean>;
 
 export function Login(arg1:bindings.LoginRequest):Promise<bindings.Response_frontend_bindings_LoginResponse_>;
+
+export function Logout():Promise<bindings.Response_interface____>;

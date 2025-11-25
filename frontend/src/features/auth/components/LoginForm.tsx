@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { AuthLayout } from "./Layout";
-import { loginThunk } from "../store/thunks";
+import { loginThunk } from "../";
 import { useAppDispatch } from "../../../app/hooks";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

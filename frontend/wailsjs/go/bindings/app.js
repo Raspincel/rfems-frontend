@@ -9,3 +9,7 @@ export function IsLoggedIn() {
 export function Login(arg1) {
   return window['go']['bindings']['app']['Login'](arg1);
 }
+
+export function Logout() {
+  return window['go']['bindings']['app']['Logout']();
+}

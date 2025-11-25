@@ -11,6 +11,10 @@ import {
 import { SidebarItem } from "./SidebarItem";
 import { useNavigate } from "react-router-dom";
 import { useMenu } from "../../hooks/contexts";
+import { Modal } from "../ui/Modal";
+import { useState } from "react";
+import { useAppDispatch } from "../../app/hooks";
+import { logoutThunk } from "../../features/auth";
 
 interface Props {
   currentRoute: string;
@@ -58,7 +62,7 @@ function MobileOverlay() {
 
 function SidebarContainer({ children }: { children: React.ReactNode }) {
   const { isMenuOpen } = useMenu();
-  
+
   return (
     <aside
       className={`
@@ -130,17 +134,56 @@ function NavItems({
 
 function Footer() {
   return (
-    <div className="p-4 border-t border-slate-100">
-      <button className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-slate-50 transition-colors">
-        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
-          <User size={16} className="text-slate-500" />
-        </div>
-        <div className="flex-1 text-left">
-          <p className="text-sm font-medium text-slate-700">John Doe</p>
-          <p className="text-xs text-slate-400">View Profile</p>
-        </div>
-        <LogOut size={16} className="text-slate-400" />
-      </button>
+    <div className="p-4 border-t border-slate-100 flex items-center gap-3 w-full rounded-lg transition-colors">
+      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+        <User size={16} className="text-slate-500" />
+      </div>
+      <div className="flex-1 text-left">
+        <p className="text-sm font-medium text-slate-700">John Doe</p>
+        <p className="text-xs text-slate-400">View Profile</p>
+      </div>
+      <LogoutButton />
     </div>
+  );
+}
+
+function LogoutButton() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const dispatch = useAppDispatch();
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const onLogout = () => {
+    dispatch(logoutThunk());
+    closeModal();
+  }
+
+  return (
+    <>
+      <Modal isOpen={isModalOpen} onRequestClose={closeModal}>
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
+          <p className="mb-6">Are you sure you want to log out?</p>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={closeModal}
+              className="px-4 py-2 bg-slate-200 text-slate-700 rounded hover:bg-slate-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onLogout}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </Modal>
+      <span className="p-2 rounded-full hover:bg-slate-100 cursor-pointer" onClick={openModal}>
+        <LogOut size={16} className="text-slate-400 hover:text-slate-600" />
+      </span>
+    </>
   );
 }

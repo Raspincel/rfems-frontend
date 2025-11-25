@@ -92,3 +92,21 @@ func (a *app) Login(data LoginRequest) Response[LoginResponse] {
 
 	return loginResponse
 }
+
+func (a *app) Logout() Response[any] {
+	err := keyring.Delete(serviceName, userKey)
+
+	if err != nil {
+		return Response[any]{
+			Success: false,
+			Message: "Failed to delete auth token",
+		}
+	}
+
+	a.token = ""
+
+	return Response[any]{
+		Success: true,
+		Message: "Logged out successfully",
+	}
+}
