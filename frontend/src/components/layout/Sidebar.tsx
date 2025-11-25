@@ -58,14 +58,14 @@ function MobileOverlay() {
 
 function SidebarContainer({ children }: { children: React.ReactNode }) {
   const { isMenuOpen } = useMenu();
-
+  
   return (
     <aside
       className={`
         relative inset-y-0 z-30 w-64 
         bg-white border-r border-slate-200 
         flex flex-col transition-[width] duration-300 ease-in-out
-        overflow-hidden
+        overflow-hidden max-w-[300px]
         ${isMenuOpen ? "w-full" : "w-0"}
         `}
     >
