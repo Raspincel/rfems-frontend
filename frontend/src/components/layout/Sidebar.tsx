@@ -3,10 +3,10 @@ import {
   Home,
   Settings,
   User,
-  X,
   LogOut,
   BarChart2,
   Bell,
+  Menu,
 } from "lucide-react";
 import { SidebarItem } from "./SidebarItem";
 import { useNavigate } from "react-router-dom";
@@ -28,9 +28,9 @@ interface NavItemConfig {
 
 export function Sidebar({ currentRoute }: Props) {
   const navItems: NavItemConfig[] = [
-    { icon: Home, label: "Dashboard", path: "dashboard" },
-    { icon: BarChart2, label: "Analytics", path: "analytics" },
-    { icon: User, label: "Profile", path: "profile" },
+    { icon: Home, label: "Dashboard", path: "" },
+    { icon: User, label: "Access Files", path: "access-files" },
+    { icon: BarChart2, label: "Host folder", path: "host-folder" },
     { icon: Bell, label: "Notifications", path: "notifications" },
     { icon: Settings, label: "Settings", path: "settings" },
   ];
@@ -70,7 +70,7 @@ function SidebarContainer({ children }: { children: React.ReactNode }) {
         bg-white border-r border-slate-200 
         flex flex-col transition-[width] duration-300 ease-in-out
         overflow-hidden max-w-[300px]
-        ${isMenuOpen ? "w-full" : "w-0"}
+        ${isMenuOpen ? "w-full" : "w-[60px]"}
         `}
     >
       {children}
@@ -79,22 +79,27 @@ function SidebarContainer({ children }: { children: React.ReactNode }) {
 }
 
 function LogoArea() {
-  const { setIsMenuOpen } = useMenu();
+  const { setIsMenuOpen, isMenuOpen } = useMenu();
 
   return (
-    <div className="h-16 flex items-center px-6 border-b border-slate-100">
-      <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-        <span className="text-white font-bold text-lg">A</span>
-      </div>
-      <span className="text-xl font-bold text-slate-800 tracking-tight">
-        AppLayout
+    <div className="h-16 relative flex items-center px-4 border-b border-slate-100 overflow-hidden shrink-0">
+      <span className={`
+        transition-all ease-in-out flex items-center whitespace-nowrap
+        ${isMenuOpen ? "opacity-100 w-full duration-300 delay-100" : "opacity-0 w-0 duration-100 pointer-events-none" }
+      `}>
+        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-sm">
+          <span className="text-white font-bold text-lg">R</span>
+        </div>
+        <span className="text-xl font-bold text-slate-800 tracking-tight">
+          RFEMS
+        </span>
       </span>
 
       <button
-        onClick={() => setIsMenuOpen(false)}
-        className="ml-auto p-1 text-slate-400 hover:text-slate-600"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className="ml-auto text-slate-400 hover:text-slate-600"
       >
-        <X size={20} />
+        <Menu size={20} />
       </button>
     </div>
   );
@@ -107,12 +112,16 @@ function NavItems({
   navItems: NavItemConfig[];
   currentRoute: string;
 }) {
-  const { setIsMenuOpen } = useMenu();
+  const { setIsMenuOpen, isMenuOpen } = useMenu();
   const navigate = useNavigate();
 
   return (
-    <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-2">
+    <div className="flex-1 overflow-y-auto py-6 px-2 space-y-1">
+      <div className={`
+        text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-4
+        transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap
+        ${isMenuOpen ? "opacity-100 w-auto" : "opacity-0 w-0"}
+      `}>
         Menu
       </div>
       {navItems.map((item) => (
@@ -123,7 +132,7 @@ function NavItems({
           path={item.path}
           active={currentRoute === item.path}
           onClick={(path) => {
-            navigate(path);
+            navigate(`/dashboard/${path}`);
             setIsMenuOpen(false); // Close mobile menu on click
           }}
         />
@@ -133,16 +142,28 @@ function NavItems({
 }
 
 function Footer() {
+  const { isMenuOpen } = useMenu();
+
   return (
-    <div className="p-4 border-t border-slate-100 flex items-center gap-3 w-full rounded-lg transition-colors">
-      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
-        <User size={16} className="text-slate-500" />
+    <div className="shrink-0 p-4 border-t border-slate-100 flex items-center overflow-hidden">
+      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden text-slate-500 shrink-0">
+        <User size={16} />
       </div>
-      <div className="flex-1 text-left">
-        <p className="text-sm font-medium text-slate-700">John Doe</p>
-        <p className="text-xs text-slate-400">View Profile</p>
+      <div
+        className={`
+          flex items-center justify-between flex-1 overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out
+          ${isMenuOpen 
+            ? "w-full ml-3 opacity-100"
+            : "w-0 ml-0 opacity-0"
+          }
+        `}
+      >
+        <div className="flex-1 text-left">
+          <p className="text-sm font-medium text-slate-700">John Doe</p>
+          <p className="text-xs text-slate-400">View Profile</p>
+        </div>
+        <LogoutButton />
       </div>
-      <LogoutButton />
     </div>
   );
 }
@@ -157,7 +178,7 @@ function LogoutButton() {
   const onLogout = () => {
     dispatch(logoutThunk());
     closeModal();
-  }
+  };
 
   return (
     <>
@@ -181,7 +202,10 @@ function LogoutButton() {
           </div>
         </div>
       </Modal>
-      <span className="p-2 rounded-full hover:bg-slate-100 cursor-pointer" onClick={openModal}>
+      <span
+        className="p-2 rounded-full hover:bg-slate-100 cursor-pointer"
+        onClick={openModal}
+      >
         <LogOut size={16} className="text-slate-400 hover:text-slate-600" />
       </span>
     </>
