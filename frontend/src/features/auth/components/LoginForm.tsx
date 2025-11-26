@@ -23,7 +23,7 @@ export function LoginForm() {
         loginThunk(data)
       )
         .unwrap();
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: AxiosError | any) {
       console.error("Failed to login:", error.message);
     }
