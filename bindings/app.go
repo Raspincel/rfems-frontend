@@ -11,10 +11,11 @@ import (
 
 // app struct
 type app struct {
-	ctx    context.Context
-	client *http.Client
-	apiURL string
-	token  string
+	ctx                  context.Context
+	communicationChannel chan []byte
+	client               *http.Client
+	apiURL               string
+	token                string
 }
 
 type Response[T any] struct {
@@ -42,6 +43,7 @@ func NewApp() *app {
 		client: &http.Client{
 			Timeout: 90 * time.Second,
 		},
+		communicationChannel: make(chan []byte),
 	}
 }
 
@@ -52,11 +54,15 @@ func (a app) buildApiUrl(path string) string {
 // startup is called at application startup
 func (a *app) Startup(ctx context.Context) {
 	a.ctx = ctx
-	token, err := keyring.Get(serviceName, userKey)
 
-	if err == nil {
-		a.token = token
+	if len(os.Args) < 2 {
+		userKey = "user-auth-token"
+	} else {
+		// Use a different key to be able to run multiple instances in development
+		userKey = "user-auth-token-" + os.Args[1]
 	}
+
+	a.restoreUserSession()
 }
 
 // domReady is called after front-end resources have been loaded
@@ -71,3 +77,45 @@ func (a *app) beforeClose(ctx context.Context) (prevent bool) {
 
 // shutdown is called at application termination
 func (a *app) shutdown(ctx context.Context) {}
+
+const serviceName = "rfems-desktop-app"
+
+var userKey string
+
+func (a *app) restoreUserSession() {
+	token, err := keyring.Get(serviceName, userKey)
+
+	if err != nil {
+		return
+	}
+
+	a.token = token
+	err = a.connect(a.apiURL, "/api/v1/ws/connect", a.token, a.client, a.communicationChannel)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (a *app) storeUserSession(token string) {
+	keyring.Set(serviceName, userKey, token)
+	a.token = token
+
+	err := a.connect(a.apiURL, "/api/v1/ws/connect", a.token, a.client, a.communicationChannel)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (a *app) endUserSession() error {
+	err := keyring.Delete(serviceName, userKey)
+
+	if err != nil {
+		return err
+	}
+
+	a.token = ""
+
+	return nil
+}

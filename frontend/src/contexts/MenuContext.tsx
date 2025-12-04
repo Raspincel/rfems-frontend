@@ -5,11 +5,13 @@ const MOBILE_BREAKPOINT = 768;
 export const menuContext = createContext<{
   isMenuOpen: boolean | null;
   setIsMenuOpen: (open: boolean) => void;
+  closeIfOpenOnMobile: () => void;
   shouldShowOverlay: boolean;
 }>({
   isMenuOpen: false,
   shouldShowOverlay: true,
   setIsMenuOpen: () => {},
+  closeIfOpenOnMobile: () => {},
 });
 
 export function MenuProvider({ children }: { children: React.ReactNode }) {
@@ -25,22 +27,30 @@ export function MenuProvider({ children }: { children: React.ReactNode }) {
         setIsMenuOpen(false);
       }
     };
-
+    
     handleResize();
-
+    
     window.addEventListener("resize", handleResize);
-
+    
     return () => window.removeEventListener("resize", handleResize);
   }, [isMenuOpen]);
-
+  
   const shouldShowOverlay =
-    isMenuOpen === true &&
-    typeof window !== "undefined" &&
-    window.innerWidth < MOBILE_BREAKPOINT;
+  isMenuOpen === true &&
+  typeof window !== "undefined" &&
+  window.innerWidth < MOBILE_BREAKPOINT;
+
+  const closeIfOpenOnMobile = () => {
+    if (!isMenuOpen) return;
+
+    if (typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT) {
+      setIsMenuOpen(false);
+    }
+  }
 
   return (
     <menuContext.Provider
-      value={{ isMenuOpen, setIsMenuOpen, shouldShowOverlay }}
+      value={{ isMenuOpen, setIsMenuOpen, shouldShowOverlay, closeIfOpenOnMobile }}
     >
       {children}
     </menuContext.Provider>

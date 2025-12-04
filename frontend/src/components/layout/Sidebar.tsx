@@ -112,7 +112,7 @@ function NavItems({
   navItems: NavItemConfig[];
   currentRoute: string;
 }) {
-  const { setIsMenuOpen, isMenuOpen } = useMenu();
+  const { isMenuOpen, closeIfOpenOnMobile } = useMenu();
   const navigate = useNavigate();
 
   return (
@@ -133,7 +133,7 @@ function NavItems({
           active={currentRoute === item.path}
           onClick={(path) => {
             navigate(`/dashboard/${path}`);
-            setIsMenuOpen(false); // Close mobile menu on click
+            closeIfOpenOnMobile();
           }}
         />
       ))}

@@ -25,7 +25,7 @@ export function LoginForm() {
         .unwrap();
       navigate("/dashboard");
     } catch (error: AxiosError | any) {
-      console.error("Failed to login:", error.message);
+      console.error("Failed to login:", error);
     }
   };
 

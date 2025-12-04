@@ -5,6 +5,7 @@ import (
 	"frontend/bindings"
 
 	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -20,7 +21,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:            "wails-events",
+		Title:            "RFEMS",
 		Width:            1024,
 		Height:           768,
 		Assets:           assets,
@@ -29,6 +30,8 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
+		Fullscreen: true,
+		LogLevel:   logger.ERROR,
 	})
 
 	if err != nil {

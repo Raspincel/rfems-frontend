@@ -1,6 +1,8 @@
-import React, { useState, ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { Sidebar } from "../components/layout/Sidebar";
 import { Header } from "../components/layout/Header";
+import { useAppDispatch } from "../app/hooks";
+import { fetchUserThunk } from "../features/user";
 
 interface Props {
   children: ReactNode;
@@ -8,6 +10,12 @@ interface Props {
 }
 
 export function DashboardLayout({ children, currentRoute }: Props) {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(fetchUserThunk());
+  }, [])
+
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
       <Sidebar currentRoute={currentRoute} />
