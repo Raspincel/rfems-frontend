@@ -3,6 +3,7 @@ package bindings
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,7 +22,22 @@ func (a *app) connect(apiURL, path, token string, client *http.Client, ch chan [
 	})
 
 	if err != nil {
-		panic(err)
+		if res.StatusCode > 400 && res.StatusCode < 500 {
+			defer res.Body.Close()
+			body, _ := io.ReadAll(res.Body)
+
+			var response Response[any]
+
+			err = json.Unmarshal(body, &response)
+
+			if err != nil {
+				return fmt.Errorf("Failed to parse error response: %s", err.Error())
+			}
+
+			return fmt.Errorf("WebSocket connection failed: %s", response.Message)
+		}
+
+		return errors.New("Error connecting to WebSocket:" + err.Error())
 	}
 
 	if res.StatusCode != http.StatusSwitchingProtocols {

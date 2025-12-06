@@ -78,7 +78,14 @@ func (a *app) Login(data LoginRequest) Response[LoginResponse] {
 		}
 	}
 
-	a.storeUserSession(loginResponse.Data.AccessToken)
+	err = a.storeUserSession(loginResponse.Data.AccessToken)
+
+	if err != nil {
+		return Response[LoginResponse]{
+			Success: false,
+			Message: "Failed to store user session: " + err.Error(),
+		}
+	}
 
 	// Clear data field to avoid returning sensitive info
 	loginResponse.Data = LoginResponse{}

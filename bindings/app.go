@@ -2,6 +2,8 @@ package bindings
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -89,23 +91,28 @@ func (a *app) restoreUserSession() {
 		return
 	}
 
-	a.token = token
-	err = a.connect(a.apiURL, "/api/v1/ws/connect", a.token, a.client, a.communicationChannel)
+	err = a.connect(a.apiURL, "/api/v1/ws/connect", token, a.client, a.communicationChannel)
 
-	if err != nil {
-		panic(err)
+	if err == nil {
+		a.token = token
 	}
 }
 
-func (a *app) storeUserSession(token string) {
-	keyring.Set(serviceName, userKey, token)
-	a.token = token
-
-	err := a.connect(a.apiURL, "/api/v1/ws/connect", a.token, a.client, a.communicationChannel)
+func (a *app) storeUserSession(token string) error {
+	err := a.connect(a.apiURL, "/api/v1/ws/connect", token, a.client, a.communicationChannel)
 
 	if err != nil {
-		panic(err)
+		return errors.New("Failed to connect WebSocket: " + err.Error())
 	}
+
+	err = keyring.Set(serviceName, userKey, token)
+
+	if err != nil {
+		fmt.Println("Warning: Failed to store token in keyring:", err.Error())
+	}
+
+	a.token = token
+	return nil
 }
 
 func (a *app) endUserSession() error {
