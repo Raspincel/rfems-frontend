@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../../app/store";
 import { AuthState } from "../types";
 import { loginThunk, logoutThunk } from "./thunks";
+import { toast } from "react-toastify";
 
 const initialState: AuthState = {
   isLoggedIn: null,
@@ -25,17 +26,21 @@ const authSlice = createSlice({
       .addCase(loginThunk.fulfilled, (s, a) => {
         s.status = "succeeded";
         s.isLoggedIn = a.payload.success;
+        toast.success(a.payload.message);
       })
       .addCase(loginThunk.rejected, (s, a) => {
         s.status = "failed";
         s.error = a.error.message || null;
+        toast.error(s.error || "Login failed");
       })
       .addCase(logoutThunk.fulfilled, (s) => {
         s.isLoggedIn = false;
         s.status = "idle";
+        toast.success("Logged out successfully");
       })
       .addCase(logoutThunk.rejected, (s, a) => {
         s.error = a.error.message || null;
+        toast.error(s.error || "Logout failed");
       })
       .addCase(logoutThunk.pending, (s) => {
         s.status = "loading";

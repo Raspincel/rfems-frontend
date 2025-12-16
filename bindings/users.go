@@ -59,7 +59,14 @@ func (a *app) Login(data LoginRequest) Response[LoginResponse] {
 
 	defer resp.Body.Close()
 
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return Response[LoginResponse]{
+			Success: false,
+			Message: "Failed to read login response: " + err.Error(),
+		}
+	}
 
 	var loginResponse Response[LoginResponse]
 
@@ -118,6 +125,7 @@ type UserBasicInfo struct {
 	LastActiveAt      string `json:"lastActiveAt"`
 	Status            string `json:"status"`
 	FolderBeingHosted string `json:"folderBeingHosted"`
+	IsPublic          bool   `json:"isPublic"`
 }
 
 func (a *app) GetUsersList() Response[[]UserBasicInfo] {
