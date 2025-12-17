@@ -7,7 +7,7 @@ export function UsersTable() {
   const users = useAppSelector(selectUsers);
   const usersStatus = useAppSelector(selectUsersStatus);
 
-  if (usersStatus === "loading") {
+  if (usersStatus !== "succeeded") {
     return <Loader />;
   }
 
@@ -27,8 +27,11 @@ export function UsersTable() {
               <th className="px-6 py-4 font-semibold text-gray-700">
                 Shared Folder
               </th>
+              <th className="px-6 py-4 font-semibold text-gray-700">
+                Visibility
+              </th>
               <th className="px-6 py-4 font-semibold text-center text-gray-700">
-                Transferences
+                Active transferences
               </th>
               <th className="px-6 py-4 font-semibold text-right text-gray-700">
                 Actions
@@ -66,15 +69,25 @@ export function UsersTable() {
                 <td className="px-6 py-4 text-center">
                   {user.status === "hosting" ? (
                     <span className="font-semibold text-gray-700">
-                      {user.activeTransfers}
+                      {user.isPublic ? "Public" : "Private"}
+                    </span>
+                  ) : (
+                    <span className="text-gray-300">-</span>
+                  )}
+                </td>
+                
+                <td className="px-6 py-4 text-center">
+                  {user.status === "hosting" ? (
+                    <span className="font-semibold text-gray-700">
+                      {user.activeTransfers ?? 0}
                     </span>
                   ) : (
                     <span className="text-gray-300">-</span>
                   )}
                 </td>
 
-                <td className="px-6 py-4 text-right">
-                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white transition-all bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 active:scale-95">
+                <td className="px-6 py-4 text-center">
+                  { user.status === "hosting" ? <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white transition-all bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 active:scale-95">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
@@ -91,6 +104,8 @@ export function UsersTable() {
                     </svg>
                     Browse Files
                   </button>
+                  : <span className="text-gray-300">-</span>  
+                }
                 </td>
               </tr>
             ))}

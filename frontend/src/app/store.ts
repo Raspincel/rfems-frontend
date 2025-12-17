@@ -16,3 +16,25 @@ export type AppThunk<ThunkReturnType = void> = ThunkAction<
   unknown,
   Action
 >;
+
+export type APIReturn<T> = {
+  message: string;
+  success: boolean;
+  data: T;
+  errors?: {
+    code: string;
+    field?: string;
+    message: string;
+  }[];
+  meta: {
+    timestamp: string;
+    trace_id: string;
+  };
+};
+
+export type ThunkConfig = {
+  rejectValue: {
+    message: string;
+    errors?: APIReturn<null>["errors"];
+  };
+};

@@ -15,7 +15,7 @@ import (
 )
 
 func (a *app) connect(apiURL, path, token string, client *http.Client, ch chan []byte) error {
-	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/api/v1/ws/connect"}
+	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/api/v1/sessions/connect"}
 
 	conn, res, err := websocket.DefaultDialer.Dial(u.String(), http.Header{
 		"Authorization": []string{"Bearer " + token},

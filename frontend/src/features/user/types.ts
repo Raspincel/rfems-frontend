@@ -19,6 +19,7 @@ export interface BasicUserInfos {
   status: "online" | "offline" | "hosting";
   folderBeingHosted: string | null;
   activeTransfers: number;
+  isPublic: boolean;
 }
 
 export type UserStatusUpdatePayload =

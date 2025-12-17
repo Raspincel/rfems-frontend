@@ -1,8 +1,8 @@
 import { ReactNode, useEffect } from "react";
 import { Sidebar } from "../components/layout/Sidebar";
 import { Header } from "../components/layout/Header";
-import { useAppDispatch } from "../app/hooks";
-import { fetchUserThunk } from "../features/user";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { fetchUserThunk, selectProfileStatus } from "../features/user";
 
 interface Props {
   children: ReactNode;
@@ -11,10 +11,12 @@ interface Props {
 
 export function DashboardLayout({ children, currentRoute }: Props) {
   const dispatch = useAppDispatch();
-
+  const profileStatus = useAppSelector(selectProfileStatus);
+  
   useEffect(() => {
+    if (profileStatus !== "idle") return
     dispatch(fetchUserThunk());
-  }, [])
+  }, [profileStatus])
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
