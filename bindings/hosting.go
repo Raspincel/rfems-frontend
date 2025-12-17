@@ -107,7 +107,7 @@ func (a *app) StartHosting(request StartHostingRequest) Response[any] {
 }
 
 func (a *app) StopHosting() Response[any] {
-	req, err := http.NewRequest("PUT", a.buildApiUrl("/v1/sessions/stop-hosting"), nil)
+	req, err := http.NewRequest("DELETE", a.buildApiUrl("/v1/sessions/stop-hosting"), nil)
 
 	if err != nil {
 		return Response[any]{
