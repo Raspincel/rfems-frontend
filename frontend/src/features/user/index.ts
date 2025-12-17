@@ -1,6 +1,7 @@
 export type { BasicUserInfos } from "./types";
 export {
   updateUserStatus,
+  updateUserHostingStatus,
   selectUsersStatus,
   selectProfileStatus,
 } from "./store/slice";

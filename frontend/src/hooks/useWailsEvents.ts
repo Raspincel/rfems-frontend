@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { EventsOn } from "../../wailsjs/runtime/runtime";
 import { useDispatch } from "react-redux";
-import { updateUserStatus } from "../features/user";
+import { updateUserHostingStatus, updateUserStatus } from "../features/user";
 
 export function useWailsEvents() {
   const dispatch = useDispatch();
@@ -10,6 +10,10 @@ export function useWailsEvents() {
     const events = [
       EventsOn("user:status_update", (data) => {
         dispatch(updateUserStatus(data));
+      }),
+
+      EventsOn("user:hosting_update", (data) => {
+        dispatch(updateUserHostingStatus(data));
       }),
     ];
 

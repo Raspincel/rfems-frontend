@@ -79,14 +79,23 @@ func (a *app) connect(apiURL, path, token string, client *http.Client, ch chan [
 }
 
 type messageEnvelope struct {
+	UserID  string          `json:"user_id"`
 	Type    string          `json:"type"`
 	Payload json.RawMessage `json:"payload"`
 }
 
 type statusUpdate struct {
-	UserID       string    `json:"userId"`
+	UserID       string    `json:"userId,omitzero"`
 	Status       string    `json:"status"`
 	LastActiveAt time.Time `json:"lastActiveAt,omitzero"`
+}
+
+type hostingUpdate struct {
+	UserID              string `json:"userId,omitzero"`
+	Status              string `json:"status"`
+	Folder              string `json:"folder"`
+	IsPublic            bool   `json:"isPublic"`
+	ActiveTransferences int    `json:"activeTransferences"`
 }
 
 func readPump(ctx context.Context, ch <-chan []byte) {
@@ -109,7 +118,19 @@ func readPump(ctx context.Context, ch <-chan []byte) {
 				continue
 			}
 
+			status.UserID = envelope.UserID
 			runtime.EventsEmit(ctx, "user:status_update", status)
+		case "hosting_update":
+			var hosting hostingUpdate
+			err := json.Unmarshal(envelope.Payload, &hosting)
+
+			if err != nil {
+				fmt.Println("Error unmarshaling hosting update:", err)
+				continue
+			}
+
+			hosting.UserID = envelope.UserID
+			runtime.EventsEmit(ctx, "user:hosting_update", hosting)
 		}
 
 	}

@@ -1,5 +1,9 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { UserState, UserStatusUpdatePayload } from "../types";
+import {
+  HostingStatusUpdatePayload,
+  UserState,
+  UserStatusUpdatePayload,
+} from "../types";
 import { fetchUserThunk, fetchBasicUsersInfosThunk } from "./thunks";
 import { RootState } from "../../../app/store";
 import { toast } from "react-toastify";
@@ -22,7 +26,6 @@ const userSlice = createSlice({
           return {
             ...user,
             status: action.payload.status,
-            isPublic: user.isPublic,
             lastActiveAt:
               action.payload.status === "offline"
                 ? action.payload.lastActiveAt
@@ -30,6 +33,22 @@ const userSlice = createSlice({
           };
         }
         return user;
+      });
+    },
+    updateUserHostingStatus(
+      state,
+      action: PayloadAction<HostingStatusUpdatePayload>
+    ) {
+      state.users = state.users.map((user) => {
+        if (user.id !== action.payload.userId) return user;
+
+        return {
+          ...user,
+          isPublic: action.payload.isPublic,
+          folderBeingHosted: action.payload.folder,
+          activeTransfers: action.payload.activeTransferences,
+          status: action.payload.status,
+        };
       });
     },
   },
@@ -77,7 +96,7 @@ export const selectUsersStatus = (state: RootState) => state.user.usersStatus;
 export const selectProfileStatus = (state: RootState) =>
   state.user.profileStatus;
 
-const { updateUserStatus } = userSlice.actions;
+const { updateUserStatus, updateUserHostingStatus } = userSlice.actions;
 
-export { updateUserStatus };
+export { updateUserStatus, updateUserHostingStatus };
 export default userSlice.reducer;

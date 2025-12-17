@@ -32,3 +32,11 @@ export type UserStatusUpdatePayload =
       status: "offline";
       lastActiveAt: string;
     };
+
+export type HostingStatusUpdatePayload = {
+  status: "hosting";
+  folder: string;
+  activeTransferences: number;
+  isPublic: boolean;
+  userId: string;
+};
