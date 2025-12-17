@@ -10,6 +10,7 @@ const initialState: HostingState = {
   isPublic: false,
   status: "idle",
   error: null,
+  users: [],
 };
 
 const hostingSlice = createSlice({
@@ -56,5 +57,11 @@ const hostingSlice = createSlice({
 });
 
 export const selectIsHosting = (state: RootState) => state.hosting.isHosting;
+export const selectFolderPath = (state: RootState) => state.hosting.folderPath;
+export const selectIsPublic = (state: RootState) => state.hosting.isPublic;
+export const selectActiveUsers = (state: RootState) =>
+  state.hosting.users.filter((user) => user.approved);
+export const selectPendingUsers = (state: RootState) =>
+  state.hosting.users.filter((user) => !user.approved);
 
 export default hostingSlice.reducer;
