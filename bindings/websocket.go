@@ -98,6 +98,19 @@ type hostingUpdate struct {
 	ActiveTransferences int    `json:"activeTransferences"`
 }
 
+type connectedUserUpdate struct {
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Email         string `json:"email"`
+	Approved      bool   `json:"approved"`
+	CurrentFolder string `json:"currentFolder"`
+}
+
+type kickedByHost struct {
+	HostID string `json:"hostId"`
+	Reason string `json:"reason"`
+}
+
 func readPump(ctx context.Context, ch <-chan []byte) {
 	for msg := range ch {
 		var envelope messageEnvelope
@@ -131,7 +144,30 @@ func readPump(ctx context.Context, ch <-chan []byte) {
 
 			hosting.UserID = envelope.UserID
 			runtime.EventsEmit(ctx, "user:hosting_update", hosting)
-		}
+		case "connected_user_update":
+			var user connectedUserUpdate
 
+			err := json.Unmarshal(envelope.Payload, &user)
+
+			if err != nil {
+				fmt.Println("Error unmarshaling connected user update:", err)
+				continue
+			}
+
+			runtime.EventsEmit(ctx, "user:connected_user_update", user)
+		case "kicked_by_host":
+			var kicked kickedByHost
+
+			err := json.Unmarshal(envelope.Payload, &kicked)
+
+			if err != nil {
+				fmt.Println("Error unmarshaling kicked by host:", err)
+				continue
+			}
+
+			runtime.EventsEmit(ctx, "user:kicked_by_host", kicked)
+		}
 	}
+}
+
 }

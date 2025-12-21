@@ -4,6 +4,8 @@ import {bindings} from '../models';
 
 export function ChooseFolder():Promise<bindings.Response_frontend_bindings_SelectedFolder_>;
 
+export function ConnectToHost(arg1:string):Promise<bindings.Response_frontend_bindings_ConnectToHostResponse_>;
+
 export function GetUsersList():Promise<bindings.Response___frontend_bindings_UserBasicInfo_>;
 
 export function IsLoggedIn():Promise<boolean>;
@@ -14,6 +16,8 @@ export function Logout():Promise<bindings.Response_interface____>;
 
 export function Me():Promise<bindings.Response_frontend_bindings_Me_>;
 
+export function RequestFilesList(arg1:string):Promise<bindings.Response_interface____>;
+
 export function StartHosting(arg1:bindings.StartHostingRequest):Promise<bindings.Response_interface____>;
 
-export function StopHosting():Promise<bindings.Response_interface____>;
+export function StopHosting(arg1:string):Promise<bindings.Response_interface____>;

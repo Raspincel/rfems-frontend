@@ -1,5 +1,17 @@
 export namespace bindings {
 	
+	export class ConnectToHostResponse {
+	    token: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ConnectToHostResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.token = source["token"];
+	    }
+	}
 	export class Error {
 	    code: string;
 	    field?: string;
@@ -157,6 +169,44 @@ export namespace bindings {
 	        this.success = source["success"];
 	        this.message = source["message"];
 	        this.data = this.convertValues(source["data"], UserBasicInfo);
+	        this.meta = this.convertValues(source["meta"], Meta);
+	        this.errors = this.convertValues(source["errors"], Error);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class Response_frontend_bindings_ConnectToHostResponse_ {
+	    success: boolean;
+	    message: string;
+	    data: ConnectToHostResponse;
+	    meta: Meta;
+	    errors?: Error[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Response_frontend_bindings_ConnectToHostResponse_(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.success = source["success"];
+	        this.message = source["message"];
+	        this.data = this.convertValues(source["data"], ConnectToHostResponse);
 	        this.meta = this.convertValues(source["meta"], Meta);
 	        this.errors = this.convertValues(source["errors"], Error);
 	    }

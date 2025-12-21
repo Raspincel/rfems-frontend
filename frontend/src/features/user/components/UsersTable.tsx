@@ -1,14 +1,20 @@
-import { useAppSelector } from "../../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { Loader } from "../../../components/common/Loader";
+import { connectToHostThunk } from "../../explorer";
 import { selectUsers, selectUsersStatus } from "../store/slice";
 import { BasicUserInfos } from "../types";
 
 export function UsersTable() {
   const users = useAppSelector(selectUsers);
   const usersStatus = useAppSelector(selectUsersStatus);
+  const dispatch = useAppDispatch();
 
   if (usersStatus !== "succeeded") {
     return <Loader />;
+  }
+
+  const handleConnectToHost = (hostId: string) => {
+    dispatch(connectToHostThunk({ hostId: hostId }));
   }
 
   return (
@@ -87,7 +93,9 @@ export function UsersTable() {
                 </td>
 
                 <td className="px-6 py-4 text-center">
-                  { user.status === "hosting" ? <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white transition-all bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 active:scale-95">
+                  { user.status === "hosting" ? <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white transition-all bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 active:scale-95"
+                  onClick={() => handleConnectToHost(user.id)}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"

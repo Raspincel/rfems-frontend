@@ -2,18 +2,25 @@ import { useEffect } from "react";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { UsersTable, selectProfileStatus, selectUsersStatus, fetchBasicUsersInfosThunk } from "../features/user";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { selectIsConnectedToHost } from "../features/explorer";
+import { Navigate } from "react-router-dom";
 
 export function AccessFilesPage() {
   const dispatch = useAppDispatch();
 
   const usersStatus = useAppSelector(selectUsersStatus);
   const profileStatus = useAppSelector(selectProfileStatus);
+  const isConnectedToHost = useAppSelector(selectIsConnectedToHost)
 
   useEffect(() => {
     if (usersStatus === "idle" && profileStatus === "succeeded") {
       dispatch(fetchBasicUsersInfosThunk());
     }
-  }, [usersStatus, dispatch, profileStatus]);
+  }, [usersStatus, dispatch, profileStatus, isConnectedToHost]);
+
+  if (isConnectedToHost) {
+    return <Navigate to="/dashboard/explorer" />;
+  }
 
   return (
     <DashboardLayout currentRoute="access-files">

@@ -14,5 +14,5 @@ export const startHosting = async (folderName: string, isPublic: boolean) => {
 };
 
 export const stopHosting = async () => {
-  return await StopHosting();
+  return await StopHosting("online");
 };

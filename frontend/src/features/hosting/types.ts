@@ -1,9 +1,10 @@
 interface User {
   id: string;
   name: string;
+  email: string;
 }
 
-type ActiveUser = User & {
+export type ActiveUser = User & {
   approved: true;
   currentFolder: string;
   action?: {
@@ -13,7 +14,7 @@ type ActiveUser = User & {
   };
 };
 
-type PendingUser = User & {
+export type PendingUser = User & {
   approved: false;
   requestedAt: string;
 };

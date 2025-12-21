@@ -1,5 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { HostingState } from "../types";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { ActiveUser, HostingState, PendingUser } from "../types";
 import { startHostingThunk, stopHostingThunk } from "./thunks";
 import { RootState } from "../../../app/store";
 import { toast } from "react-toastify";
@@ -16,7 +16,21 @@ const initialState: HostingState = {
 const hostingSlice = createSlice({
   name: "hosting",
   initialState,
-  reducers: {},
+  reducers: {
+    updateConnectedUser: (
+      state,
+      action: PayloadAction<ActiveUser | PendingUser>
+    ) => {
+      const userIndex = state.users.findIndex(
+        (user) => user.id === action.payload.id
+      );
+      if (userIndex !== -1) {
+        state.users[userIndex] = action.payload;
+      } else {
+        state.users.push(action.payload);
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addAsyncThunk(startHostingThunk, {
@@ -45,6 +59,7 @@ const hostingSlice = createSlice({
           state.isHosting = false;
           state.isPublic = false;
           state.folderPath = "";
+          state.users = [];
           toast.success(action.payload.message);
         },
         rejected: (state, action) => {
@@ -64,4 +79,7 @@ export const selectActiveUsers = (state: RootState) =>
 export const selectPendingUsers = (state: RootState) =>
   state.hosting.users.filter((user) => !user.approved);
 
+const { updateConnectedUser } = hostingSlice.actions;
+
+export { updateConnectedUser };
 export default hostingSlice.reducer;

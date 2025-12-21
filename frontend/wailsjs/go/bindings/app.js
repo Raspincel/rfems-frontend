@@ -6,6 +6,10 @@ export function ChooseFolder() {
   return window['go']['bindings']['app']['ChooseFolder']();
 }
 
+export function ConnectToHost(arg1) {
+  return window['go']['bindings']['app']['ConnectToHost'](arg1);
+}
+
 export function GetUsersList() {
   return window['go']['bindings']['app']['GetUsersList']();
 }
@@ -26,10 +30,14 @@ export function Me() {
   return window['go']['bindings']['app']['Me']();
 }
 
+export function RequestFilesList(arg1) {
+  return window['go']['bindings']['app']['RequestFilesList'](arg1);
+}
+
 export function StartHosting(arg1) {
   return window['go']['bindings']['app']['StartHosting'](arg1);
 }
 
-export function StopHosting() {
-  return window['go']['bindings']['app']['StopHosting']();
+export function StopHosting(arg1) {
+  return window['go']['bindings']['app']['StopHosting'](arg1);
 }

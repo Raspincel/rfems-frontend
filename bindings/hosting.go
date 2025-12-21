@@ -106,8 +106,21 @@ func (a *app) StartHosting(request StartHostingRequest) Response[any] {
 	return apiResponse
 }
 
-func (a *app) StopHosting() Response[any] {
-	req, err := http.NewRequest("DELETE", a.buildApiUrl("/v1/sessions/stop-hosting"), nil)
+func (a *app) StopHosting(status string) Response[any] {
+	values := map[string]string{
+		"status": status,
+	}
+
+	jsonData, err := json.Marshal(values)
+
+	if err != nil {
+		return Response[any]{
+			Success: false,
+			Message: "Failed to marshal stop hosting data",
+		}
+	}
+
+	req, err := http.NewRequest("DELETE", a.buildApiUrl("/v1/sessions/stop-hosting"), bytes.NewBuffer(jsonData))
 
 	if err != nil {
 		return Response[any]{
@@ -148,6 +161,75 @@ func (a *app) StopHosting() Response[any] {
 			Message: "Failed to parse stop hosting response: " + err.Error(),
 		}
 	}
+
+	return apiResponse
+}
+
+type ConnectToHostResponse struct {
+	Token string `json:"token"`
+}
+
+func (a *app) ConnectToHost(hostID string) Response[ConnectToHostResponse] {
+	rawBody := map[string]string{
+		"hostID": hostID,
+	}
+
+	jsonData, err := json.Marshal(rawBody)
+
+	if err != nil {
+		return Response[ConnectToHostResponse]{
+			Success: false,
+			Message: "Failed to marshal connect to host data",
+		}
+	}
+
+	req, err := http.NewRequest("POST", a.buildApiUrl("/v1/sessions/connect-to-host"), bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		return Response[ConnectToHostResponse]{
+			Success: false,
+			Message: "Failed to create connect to host request",
+		}
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+a.token)
+
+	resp, err := a.client.Do(req)
+
+	if err != nil {
+		return Response[ConnectToHostResponse]{
+			Success: false,
+			Message: "Failed to perform connect to host request: " + err.Error(),
+		}
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return Response[ConnectToHostResponse]{
+			Success: false,
+			Message: "Failed to read connect to host response body",
+		}
+	}
+
+	var apiResponse Response[ConnectToHostResponse]
+
+	err = json.Unmarshal(body, &apiResponse)
+
+	if err != nil {
+		return Response[ConnectToHostResponse]{
+			Success: false,
+			Message: "Failed to parse connect to host response: " + err.Error(),
+		}
+	}
+
+	a.connectionToHostToken = apiResponse.Data.Token
+
+	// Clear the token in the response for security
+	apiResponse.Data.Token = ""
 
 	return apiResponse
 }

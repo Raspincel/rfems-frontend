@@ -4,6 +4,7 @@ import { HomePage } from '../pages/Home';
 import { ProtectedRoute } from '../features/auth';
 import { AccessFilesPage } from '../pages/AccessFilesPage';
 import { HostFolderPage } from '../pages/HostFolderPage';
+import { ExploreFolderPage } from '../pages/ExploreFolder';
 
 export default function AppRoutes() {  
   return (
@@ -14,6 +15,7 @@ export default function AppRoutes() {
           <Route path="" element={<HomePage />} />
           <Route path="access-files" element={<AccessFilesPage />} />
           <Route path="host-folder" element={<HostFolderPage />} />
+          <Route path="explorer" element={<ExploreFolderPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>

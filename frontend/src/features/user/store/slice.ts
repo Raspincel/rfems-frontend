@@ -26,6 +26,9 @@ const userSlice = createSlice({
           return {
             ...user,
             status: action.payload.status,
+            folderBeingHosted: null,
+            activeTransfers: 0,
+            isPublic: false,
             lastActiveAt:
               action.payload.status === "offline"
                 ? action.payload.lastActiveAt
@@ -88,7 +91,8 @@ const selectProfileId = (state: RootState) => state.user.profile.id;
 
 export const selectUsers = createSelector(
   [selectAllUsers, selectProfileId],
-  (users, profileId) => users.filter((user) => user.id !== profileId)
+  (users: UserState["users"], profileId: string) =>
+    users.filter((user) => user.id !== profileId)
 );
 
 export const selectProfile = (state: RootState) => state.user.profile;

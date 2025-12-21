@@ -13,11 +13,12 @@ import (
 
 // app struct
 type app struct {
-	ctx                  context.Context
-	communicationChannel chan []byte
-	client               *http.Client
-	apiURL               string
-	token                string
+	ctx                   context.Context
+	communicationChannel  chan []byte
+	client                *http.Client
+	apiURL                string
+	token                 string
+	connectionToHostToken string
 }
 
 type Response[T any] struct {
