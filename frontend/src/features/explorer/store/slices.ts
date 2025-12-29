@@ -1,4 +1,4 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   DisconnectFromHostData,
   ExplorerState,
@@ -6,6 +6,7 @@ import {
 } from "../types";
 import { connectToHostThunk, requestFilesListThunk } from "./thunks";
 import { toast } from "react-toastify";
+import { createAppSelector } from "../../../app/hooks";
 import { RootState } from "../../../app/store";
 
 const initialState: ExplorerState = {
@@ -97,15 +98,24 @@ export const selectIsConnectedToHost = (state: RootState) =>
 
 export const selectLoadingStatus = (state: RootState) =>
   state.explorer.status === "loading";
-export const selectCurrentPath = (state: RootState) => state.explorer.path;
-export const selectFiles = (state: RootState) => state.explorer.files;
-export const selectFolders = (state: RootState) => state.explorer.folders;
-export const selectNumberOfFolders = (state: RootState) =>
-  state.explorer.folders.length;
-export const selectNumberOfFiles = (state: RootState) =>
-  state.explorer.files.length;
 
-export const selectRootFolder = createSelector(
+export const selectCurrentPath = (state: RootState) => state.explorer.path;
+
+export const selectFiles = (state: RootState) => state.explorer.files;
+
+export const selectFolders = (state: RootState) => state.explorer.folders;
+
+export const selectNumberOfFolders = createAppSelector(
+  [(state) => state.explorer.folders],
+  (folders) => folders.length
+);
+
+export const selectNumberOfFiles = createAppSelector(
+  [(state) => state.explorer.files],
+  (files) => files.length
+);
+
+export const selectRootFolder = createAppSelector(
   [(state) => state.explorer.hostID, (state) => state.user.users],
   (hostID, users) =>
     users.find((user) => user.id === hostID)?.folderBeingHosted || null

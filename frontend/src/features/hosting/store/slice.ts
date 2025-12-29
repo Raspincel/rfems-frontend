@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ActiveUser, HostingState, PendingUser, UserUpdated } from "../types";
 import { startHostingThunk, stopHostingThunk } from "./thunks";
+import { createAppSelector } from "../../../app/hooks";
 import { RootState } from "../../../app/store";
 import { toast } from "react-toastify";
 
@@ -81,10 +82,16 @@ const hostingSlice = createSlice({
 export const selectIsHosting = (state: RootState) => state.hosting.isHosting;
 export const selectFolderPath = (state: RootState) => state.hosting.folderPath;
 export const selectIsPublic = (state: RootState) => state.hosting.isPublic;
-export const selectActiveUsers = (state: RootState) =>
-  state.hosting.users.filter((user) => user.approved);
-export const selectPendingUsers = (state: RootState) =>
-  state.hosting.users.filter((user) => !user.approved);
+
+export const selectActiveUsers = createAppSelector(
+  [(state) => state.hosting.users],
+  (users) => users.filter((user) => user.approved)
+);
+
+export const selectPendingUsers = createAppSelector(
+  [(state) => state.hosting.users],
+  (users) => users.filter((user) => !user.approved)
+);
 
 const { updateConnectedUser, removeDisconnectedUser } = hostingSlice.actions;
 

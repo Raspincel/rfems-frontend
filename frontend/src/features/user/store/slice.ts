@@ -1,4 +1,4 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   HostingStatusUpdatePayload,
   UserState,
@@ -7,6 +7,7 @@ import {
 import { fetchUserThunk, fetchBasicUsersInfosThunk } from "./thunks";
 import { RootState } from "../../../app/store";
 import { toast } from "react-toastify";
+import { createAppSelector } from "../../../app/hooks";
 
 const initialState: UserState = {
   profile: { id: "", name: "", email: "" },
@@ -87,17 +88,15 @@ const userSlice = createSlice({
   },
 });
 
-const selectAllUsers = (state: RootState) => state.user.users;
-const selectProfileId = (state: RootState) => state.user.profile.id;
-
-export const selectUsers = createSelector(
-  [selectAllUsers, selectProfileId],
-  (users: UserState["users"], profileId: string) =>
-    users.filter((user) => user.id !== profileId)
+export const selectUsers = createAppSelector(
+  [(state) => state.user.users, (state) => state.user.profile.id],
+  (users, profileId) => users.filter((user) => user.id !== profileId)
 );
 
 export const selectProfile = (state: RootState) => state.user.profile;
+
 export const selectUsersStatus = (state: RootState) => state.user.usersStatus;
+
 export const selectProfileStatus = (state: RootState) =>
   state.user.profileStatus;
 
