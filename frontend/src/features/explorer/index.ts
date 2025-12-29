@@ -5,6 +5,8 @@ export {
   disconnectFromHost,
   updateFilesList,
   selectRootFolder,
+  selectNumberOfFiles,
+  selectNumberOfFolders,
 } from "./store/slices";
 
 export { connectToHostThunk, requestFilesListThunk } from "./store/thunks";
