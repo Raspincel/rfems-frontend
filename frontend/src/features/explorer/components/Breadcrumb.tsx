@@ -1,10 +1,11 @@
 import { ChevronRight } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { selectCurrentPath } from "../store/slices";
+import { selectCurrentPath, selectRootFolder } from "../store/slices";
 import { requestFilesListThunk } from "../store/thunks";
 
 export default function Breadcrumb() {
   const currentPath = useAppSelector(selectCurrentPath);
+  const rootFolder = useAppSelector(selectRootFolder);
   const dispatch = useAppDispatch();
 
   const handleGoToRoot = () => {
@@ -24,7 +25,7 @@ export default function Breadcrumb() {
           onClick={handleGoToRoot}
           className="text-sm text-blue-600 hover:underline cursor-pointer"
         >
-          /
+          {rootFolder}
         </span>
         {currentPath.map((part, index) => (
           <div key={index} className="flex items-center gap-1">

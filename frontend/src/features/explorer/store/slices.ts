@@ -1,9 +1,7 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   DisconnectFromHostData,
   ExplorerState,
-  Folder,
-  File,
   UpdateFilesList,
 } from "../types";
 import { connectToHostThunk, requestFilesListThunk } from "./thunks";
@@ -106,5 +104,11 @@ export const selectNumberOfFolders = (state: RootState) =>
   state.explorer.folders.length;
 export const selectNumberOfFiles = (state: RootState) =>
   state.explorer.files.length;
+
+export const selectRootFolder = createSelector(
+  [(state) => state.explorer.hostID, (state) => state.user.users],
+  (hostID, users) =>
+    users.find((user) => user.id === hostID)?.folderBeingHosted || null
+);
 
 export default hostingSlice.reducer;
