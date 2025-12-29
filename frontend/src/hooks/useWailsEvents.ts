@@ -2,8 +2,11 @@ import { useEffect } from "react";
 import { EventsOn } from "../../wailsjs/runtime/runtime";
 import { useDispatch } from "react-redux";
 import { updateUserHostingStatus, updateUserStatus } from "../features/user";
-import { updateConnectedUser } from "../features/hosting";
-import { disconnectFromHost } from "../features/explorer";
+import {
+  removeDisconnectedUser,
+  updateConnectedUser,
+} from "../features/hosting";
+import { disconnectFromHost, updateFilesList } from "../features/explorer";
 
 export function useWailsEvents() {
   const dispatch = useDispatch();
@@ -12,6 +15,7 @@ export function useWailsEvents() {
     const events = [
       EventsOn("user:status_update", (data) => {
         dispatch(updateUserStatus(data));
+        dispatch(removeDisconnectedUser(data));
       }),
       EventsOn("user:hosting_update", (data) => {
         dispatch(updateUserHostingStatus(data));
@@ -21,6 +25,9 @@ export function useWailsEvents() {
       }),
       EventsOn("user:kicked_by_host", (data) => {
         dispatch(disconnectFromHost(data));
+      }),
+      EventsOn("files:received_files_list", (data) => {
+        dispatch(updateFilesList(data));
       }),
     ];
 

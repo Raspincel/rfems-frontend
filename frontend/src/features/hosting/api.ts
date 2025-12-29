@@ -9,8 +9,8 @@ export const pickFolder = async () => {
   return folderPath;
 };
 
-export const startHosting = async (folderName: string, isPublic: boolean) => {
-  return await StartHosting({ folderName, isPublic });
+export const startHosting = async (folderPath: string, isPublic: boolean) => {
+  return await StartHosting({ folderPath, isPublic });
 };
 
 export const stopHosting = async () => {

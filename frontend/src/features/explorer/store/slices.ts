@@ -1,18 +1,110 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { ExplorerState } from "../types";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  DisconnectFromHostData,
+  ExplorerState,
+  Folder,
+  File,
+  UpdateFilesList,
+} from "../types";
+import { connectToHostThunk, requestFilesListThunk } from "./thunks";
+import { toast } from "react-toastify";
+import { RootState } from "../../../app/store";
 
 const initialState: ExplorerState = {
   folders: [],
-  path: "",
+  files: [],
+  path: [],
+  hostID: null,
   error: null,
+  connected: false,
   status: "idle",
 };
 
 const hostingSlice = createSlice({
   name: "explorer",
   initialState,
-  reducers: {},
-  extraReducers: (builder) => {},
+  reducers: {
+    disconnectFromHost(state, action: PayloadAction<DisconnectFromHostData>) {
+      if (state.hostID !== action.payload.hostId) {
+        return;
+      }
+
+      state.connected = false;
+      state.status = "idle";
+      state.error = null;
+      state.hostID = null;
+      state.files = [];
+      state.folders = [];
+      state.path = [];
+      toast.info("Disconnected from host: " + action.payload.reason);
+    },
+    updateFilesList(state, action: PayloadAction<UpdateFilesList>) {
+      state.folders = [];
+      state.files = [];
+      state.path = action.payload.path;
+
+      // keep track of current path to exhibit it and use to request new files list
+      for (const item of action.payload.files) {
+        if (item.isDir) {
+          state.folders.push(item);
+        } else {
+          state.files.push(item);
+        }
+      }
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addAsyncThunk(connectToHostThunk, {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        fulfilled: (state, action) => {
+          state.status = "succeeded";
+          state.error = null;
+          state.connected = true;
+          state.hostID = action.meta.arg.hostId;
+          toast.success(action.payload.message);
+        },
+        rejected: (state, action) => {
+          state.status = "failed";
+          state.error = action.payload!.message;
+          state.connected = false;
+          toast.error(state.error || "Failed to connect to host");
+        },
+      })
+      .addAsyncThunk(requestFilesListThunk, {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        fulfilled: (state) => {
+          state.status = "succeeded";
+          state.error = null;
+        },
+        rejected: (state, action) => {
+          state.status = "failed";
+          state.error = action.payload!.message;
+          toast.error(state.error || "Failed to retrieve files");
+        },
+      });
+  },
 });
+
+const { disconnectFromHost, updateFilesList } = hostingSlice.actions;
+
+export { disconnectFromHost, updateFilesList };
+
+export const selectIsConnectedToHost = (state: RootState) =>
+  state.explorer.connected;
+
+export const selectLoadingStatus = (state: RootState) =>
+  state.explorer.status === "loading";
+export const selectCurrentPath = (state: RootState) => state.explorer.path;
+export const selectFiles = (state: RootState) => state.explorer.files;
+export const selectFolders = (state: RootState) => state.explorer.folders;
+export const selectNumberOfFolders = (state: RootState) =>
+  state.explorer.folders.length;
+export const selectNumberOfFiles = (state: RootState) =>
+  state.explorer.files.length;
 
 export default hostingSlice.reducer;

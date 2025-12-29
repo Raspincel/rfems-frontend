@@ -9,13 +9,7 @@ export const startHostingThunk = createAsyncThunk<
   ThunkConfig
 >("hosting/start", async (data: StartHostingData, { rejectWithValue }) => {
   try {
-    const name = data.folderPath.split("/").pop()?.split("/").pop();
-
-    if (!name) {
-      return rejectWithValue({ message: "Invalid folder path" });
-    }
-
-    const response = await startHosting(name, data.isPublic);
+    const response = await startHosting(data.folderPath, data.isPublic);
 
     if (!response.success) {
       return rejectWithValue(response);

@@ -9,6 +9,7 @@ export {
   selectIsPublic,
   selectPendingUsers,
   updateConnectedUser,
+  removeDisconnectedUser,
 } from "./store/slice";
 export { startHostingThunk } from "./store/thunks";
 export { default as HostingDashboard } from "./components/HostingDashboard";

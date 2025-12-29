@@ -1,7 +1,7 @@
 export namespace bindings {
 	
 	export class ConnectToHostResponse {
-	    token: string;
+	    ticket: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new ConnectToHostResponse(source);
@@ -9,7 +9,7 @@ export namespace bindings {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.token = source["token"];
+	        this.ticket = source["ticket"];
 	    }
 	}
 	export class Error {
@@ -395,7 +395,7 @@ export namespace bindings {
 	}
 	
 	export class StartHostingRequest {
-	    folderName: string;
+	    folderPath: string;
 	    isPublic: boolean;
 	
 	    static createFrom(source: any = {}) {
@@ -404,7 +404,7 @@ export namespace bindings {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.folderName = source["folderName"];
+	        this.folderPath = source["folderPath"];
 	        this.isPublic = source["isPublic"];
 	    }
 	}

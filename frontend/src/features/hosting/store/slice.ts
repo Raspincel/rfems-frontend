@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ActiveUser, HostingState, PendingUser } from "../types";
+import { ActiveUser, HostingState, PendingUser, UserUpdated } from "../types";
 import { startHostingThunk, stopHostingThunk } from "./thunks";
 import { RootState } from "../../../app/store";
 import { toast } from "react-toastify";
@@ -29,6 +29,13 @@ const hostingSlice = createSlice({
       } else {
         state.users.push(action.payload);
       }
+    },
+    removeDisconnectedUser: (state, action: PayloadAction<UserUpdated>) => {
+      if (action.payload.status !== "offline") return;
+
+      state.users = state.users.filter(
+        (user) => user.id !== action.payload.userId
+      );
     },
   },
   extraReducers: (builder) => {
@@ -79,7 +86,7 @@ export const selectActiveUsers = (state: RootState) =>
 export const selectPendingUsers = (state: RootState) =>
   state.hosting.users.filter((user) => !user.approved);
 
-const { updateConnectedUser } = hostingSlice.actions;
+const { updateConnectedUser, removeDisconnectedUser } = hostingSlice.actions;
 
-export { updateConnectedUser };
+export { updateConnectedUser, removeDisconnectedUser };
 export default hostingSlice.reducer;

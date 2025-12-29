@@ -32,3 +32,8 @@ export interface StartHostingData {
   folderPath: string;
   isPublic: boolean;
 }
+
+export interface UserUpdated {
+  userId: string;
+  status: "online" | "hosting" | "offline";
+}

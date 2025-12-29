@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -41,14 +42,15 @@ func (a *app) ChooseFolder() Response[SelectedFolder] {
 }
 
 type StartHostingRequest struct {
-	FolderName string `json:"folderName"`
+	FolderPath string `json:"folderPath"`
 	IsPublic   bool   `json:"isPublic"`
 }
 
 func (a *app) StartHosting(request StartHostingRequest) Response[any] {
 	values := map[string]any{
-		"folderName": request.FolderName,
+		"folderPath": request.FolderPath,
 		"isPublic":   request.IsPublic,
+		"separator":  string(os.PathSeparator),
 	}
 
 	jsonData, err := json.Marshal(values)
@@ -103,6 +105,8 @@ func (a *app) StartHosting(request StartHostingRequest) Response[any] {
 		}
 	}
 
+	a.hosting.isHosting = true
+	a.hosting.basePath = request.FolderPath
 	return apiResponse
 }
 
@@ -166,7 +170,7 @@ func (a *app) StopHosting(status string) Response[any] {
 }
 
 type ConnectToHostResponse struct {
-	Token string `json:"token"`
+	Ticket string `json:"ticket"`
 }
 
 func (a *app) ConnectToHost(hostID string) Response[ConnectToHostResponse] {
@@ -226,10 +230,10 @@ func (a *app) ConnectToHost(hostID string) Response[ConnectToHostResponse] {
 		}
 	}
 
-	a.connectionToHostToken = apiResponse.Data.Token
+	a.ticket = apiResponse.Data.Ticket
 
-	// Clear the token in the response for security
-	apiResponse.Data.Token = ""
+	// Clear the ticket in the response for security
+	apiResponse.Data.Ticket = ""
 
 	return apiResponse
 }

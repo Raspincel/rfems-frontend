@@ -4,21 +4,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"frontend/ws"
 	"net/http"
 	"os"
+	"strconv"
+	"sync/atomic"
 	"time"
 
 	"github.com/zalando/go-keyring"
 )
 
-// app struct
+type hosting struct {
+	isHosting bool
+	basePath  string
+}
+
 type app struct {
-	ctx                   context.Context
-	communicationChannel  chan []byte
-	client                *http.Client
-	apiURL                string
-	token                 string
-	connectionToHostToken string
+	ctx                  context.Context
+	communicationChannel chan ws.WriteMessage
+	client               *http.Client
+	apiURL               string
+	token                string
+	ticket               string
+	hosting              hosting
+	messagesQueue        []message
+	totalMessages        atomic.Int32
 }
 
 type Response[T any] struct {
@@ -40,17 +50,22 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+type message struct {
+	ID   string
+	Type string
+}
+
 func NewApp() *app {
 	return &app{
 		apiURL: os.Getenv("API_URL"),
 		client: &http.Client{
 			Timeout: 90 * time.Second,
 		},
-		communicationChannel: make(chan []byte),
+		communicationChannel: make(chan ws.WriteMessage),
 	}
 }
 
-func (a app) buildApiUrl(path string) string {
+func (a *app) buildApiUrl(path string) string {
 	return a.apiURL + path
 }
 
@@ -69,7 +84,7 @@ func (a *app) Startup(ctx context.Context) {
 }
 
 // domReady is called after front-end resources have been loaded
-func (a app) domReady(ctx context.Context) {}
+func (a *app) domReady(ctx context.Context) {}
 
 // beforeClose is called when the application is about to quit,
 // either by clicking the window close button or calling runtime.Quit.
@@ -92,7 +107,7 @@ func (a *app) restoreUserSession() {
 		return
 	}
 
-	err = a.connect(a.apiURL, "/api/v1/ws/connect", token, a.client, a.communicationChannel)
+	err = a.connect(a.apiURL, "/api/v1/ws/connect", token, a.client)
 
 	if err == nil {
 		a.token = token
@@ -100,7 +115,7 @@ func (a *app) restoreUserSession() {
 }
 
 func (a *app) storeUserSession(token string) error {
-	err := a.connect(a.apiURL, "/api/v1/ws/connect", token, a.client, a.communicationChannel)
+	err := a.connect(a.apiURL, "/api/v1/ws/connect", token, a.client)
 
 	if err != nil {
 		return errors.New("Failed to connect WebSocket: " + err.Error())
@@ -126,4 +141,8 @@ func (a *app) endUserSession() error {
 	a.token = ""
 
 	return nil
+}
+
+func (a *app) generateMessageID() string {
+	return strconv.Itoa(int(a.totalMessages.Add(1)))
 }
