@@ -68,3 +68,22 @@ func sendFilesList(data sendFilesListData, base *baseWriteData) {
 
 	base.Ch <- message
 }
+
+func SendClientPathUpdate(path []string, base *baseWriteData) {
+	payload, err := util.ToRawMessage(map[string]any{
+		"path": path,
+	})
+
+	if err != nil {
+		return
+	}
+
+	message := WriteMessage{
+		ID:         base.ID,
+		Type:       "update_client_path",
+		Ticket:     base.Ticket,
+		RawPayload: payload,
+	}
+
+	base.Ch <- message
+}

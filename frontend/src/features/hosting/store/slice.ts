@@ -4,7 +4,8 @@ import {
   HostingState,
   PendingUser,
   RemoveClient,
-  UserUpdated,
+  UserPathUpdated,
+  UserStatusUpdated,
 } from "../types";
 import { startHostingThunk, stopHostingThunk } from "./thunks";
 import { createAppSelector } from "../../../app/hooks";
@@ -37,7 +38,10 @@ const hostingSlice = createSlice({
         state.users.push(action.payload);
       }
     },
-    removeDisconnectedUser: (state, action: PayloadAction<UserUpdated>) => {
+    removeDisconnectedUser: (
+      state,
+      action: PayloadAction<UserStatusUpdated>
+    ) => {
       if (action.payload.status !== "offline") return;
 
       state.users = state.users.filter(
@@ -48,6 +52,18 @@ const hostingSlice = createSlice({
       state.users = state.users.filter(
         (user) => user.id != action.payload.userId
       );
+    },
+    updateClientPath(state, action: PayloadAction<UserPathUpdated>) {
+      state.users = state.users.map((user) => {
+        if (user.id === action.payload.clientId) {
+          return {
+            ...user,
+            currentFolder: action.payload.path,
+          };
+        }
+
+        return user;
+      });
     },
   },
   extraReducers: (builder) => {
@@ -104,8 +120,17 @@ export const selectPendingUsers = createAppSelector(
   (users) => users.filter((user) => !user.approved)
 );
 
-const { updateConnectedUser, removeDisconnectedUser, removeClient } =
-  hostingSlice.actions;
+const {
+  updateConnectedUser,
+  removeDisconnectedUser,
+  removeClient,
+  updateClientPath,
+} = hostingSlice.actions;
 
-export { updateConnectedUser, removeDisconnectedUser, removeClient };
+export {
+  updateConnectedUser,
+  removeDisconnectedUser,
+  removeClient,
+  updateClientPath,
+};
 export default hostingSlice.reducer;

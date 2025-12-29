@@ -20,6 +20,8 @@ export function Me():Promise<bindings.Response_frontend_bindings_Me_>;
 
 export function RequestFilesList(arg1:Array<string>):Promise<bindings.Response_interface____>;
 
+export function SendUpdateOnClientPath(arg1:Array<string>):Promise<void>;
+
 export function StartHosting(arg1:bindings.StartHostingRequest):Promise<bindings.Response_interface____>;
 
 export function StopHosting(arg1:string):Promise<bindings.Response_interface____>;

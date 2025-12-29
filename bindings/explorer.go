@@ -149,3 +149,10 @@ func (a *app) ExitHostingSession() Response[any] {
 
 	return apiResponse
 }
+
+func (a *app) SendUpdateOnClientPath(path []string) {
+	ws.SendClientPathUpdate(path, ws.GenerateBaseWriteData(a.ticket, &ws.EventData{
+		WriteCh:    a.communicationChannel,
+		GenerateID: a.generateMessageID,
+	}))
+}

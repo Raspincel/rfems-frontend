@@ -2,6 +2,7 @@ import {
   ConnectToHost,
   RequestFilesList,
   ExitHostingSession,
+  SendUpdateOnClientPath,
 } from "../../../wailsjs/go/bindings/app";
 
 export const connectToHost = async (hostId: string) => {
@@ -14,4 +15,8 @@ export const requestFiles = async (path: string[]) => {
 
 export const exitHostingSession = async () => {
   return await ExitHostingSession();
+};
+
+export const sendUpdateOnPath = async (path: string[]) => {
+  return await SendUpdateOnClientPath(path);
 };

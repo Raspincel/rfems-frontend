@@ -5,6 +5,7 @@ import { updateUserHostingStatus, updateUserStatus } from "../features/user";
 import {
   removeClient,
   removeDisconnectedUser,
+  updateClientPath,
   updateConnectedUser,
 } from "../features/hosting";
 import { disconnectFromHost, updateFilesList } from "../features/explorer";
@@ -32,6 +33,9 @@ export function useWailsEvents() {
       }),
       EventsOn("session:client_left_session", (data) => {
         dispatch(removeClient(data));
+      }),
+      EventsOn("session:client_updated_path", (data) => {
+        dispatch(updateClientPath(data));
       }),
     ];
 

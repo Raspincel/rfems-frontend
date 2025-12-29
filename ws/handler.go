@@ -63,6 +63,11 @@ type clientLeftSession struct {
 	UserID string `json:"userId"`
 }
 
+type clientChangedPath struct {
+	Path     string `json:"path"`
+	ClientID string `json:"clientId"`
+}
+
 func HandleEvent(event *EventData) {
 	var envelope messageEnvelope
 
@@ -154,6 +159,17 @@ func HandleEvent(event *EventData) {
 		}
 
 		runtime.EventsEmit(event.Ctx, "session:client_left_session", clientLeft)
+	case "update_client_path":
+		var updatePath clientChangedPath
+
+		err := json.Unmarshal(envelope.Payload, &updatePath)
+
+		if err != nil {
+			fmt.Println("Error unmarshaling client updated path:", err)
+			return
+		}
+
+		runtime.EventsEmit(event.Ctx, "session:client_updated_path", updatePath)
 	}
 }
 

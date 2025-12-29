@@ -33,11 +33,16 @@ export interface StartHostingData {
   isPublic: boolean;
 }
 
-export interface UserUpdated {
+export interface UserStatusUpdated {
   userId: string;
   status: "online" | "hosting" | "offline";
 }
 
 export interface RemoveClient {
   userId: string;
+}
+
+export interface UserPathUpdated {
+  clientId: string;
+  path: string;
 }

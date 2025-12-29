@@ -38,6 +38,10 @@ export function RequestFilesList(arg1) {
   return window['go']['bindings']['app']['RequestFilesList'](arg1);
 }
 
+export function SendUpdateOnClientPath(arg1) {
+  return window['go']['bindings']['app']['SendUpdateOnClientPath'](arg1);
+}
+
 export function StartHosting(arg1) {
   return window['go']['bindings']['app']['StartHosting'](arg1);
 }

@@ -1,5 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { connectToHost, exitHostingSession, requestFiles } from "../api";
+import {
+  connectToHost,
+  exitHostingSession,
+  requestFiles,
+  sendUpdateOnPath,
+} from "../api";
 import { APIReturn, ThunkConfig } from "../../../app/store";
 import {
   ConnectToHostData,
@@ -44,6 +49,8 @@ export const requestFilesListThunk = createAsyncThunk<
         errors: response.errors,
       });
     }
+
+    await sendUpdateOnPath(data.path);
 
     return response;
   } catch (error) {
