@@ -18,6 +18,7 @@ export interface BasicUserInfos {
   lastActiveAt: string | undefined;
   status: "online" | "offline" | "hosting";
   folderBeingHosted: string | null;
+  fullFolderPath: string | null;
   activeTransfers: number;
   isPublic: boolean;
 }
@@ -39,4 +40,5 @@ export type HostingStatusUpdatePayload = {
   activeTransferences: number;
   isPublic: boolean;
   userId: string;
+  fullFolderPath: string;
 };

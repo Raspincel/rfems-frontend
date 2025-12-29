@@ -15,7 +15,7 @@ export function UsersTable() {
 
   const handleConnectToHost = (hostId: string) => {
     dispatch(connectToHostThunk({ hostId: hostId }));
-  }
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -23,17 +23,19 @@ export function UsersTable() {
         <table className="w-full text-left text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-4 font-semibold text-gray-700">
+              <th className="px-6 py-4 font-semibold text-gray-700 whitespace-nowrap">
                 Username
               </th>
-              <th className="px-6 py-4 font-semibold text-gray-700">Status</th>
-              <th className="px-6 py-4 font-semibold text-gray-700">
+              <th className="px-6 py-4 font-semibold text-gray-700 whitespace-nowrap">
+                Status
+              </th>
+              <th className="px-6 py-4 font-semibold text-gray-700 whitespace-nowrap">
                 Last Active
               </th>
-              <th className="px-6 py-4 font-semibold text-gray-700">
+              <th className="px-6 py-4 font-semibold text-gray-700 whitespace-nowrap">
                 Shared Folder
               </th>
-              <th className="px-6 py-4 font-semibold text-gray-700">
+              <th className="px-6 py-4 font-semibold text-gray-700 whitespace-nowrap">
                 Visibility
               </th>
               <th className="px-6 py-4 font-semibold text-center text-gray-700">
@@ -62,10 +64,19 @@ export function UsersTable() {
 
                 <td className="px-6 py-4 text-gray-600">
                   {user.folderBeingHosted ? (
-                    <div className="flex items-center gap-2">
+                    <div className="group relative flex flex-col items-center">
                       <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs border border-blue-100 font-mono">
                         {user.folderBeingHosted}
                       </span>
+
+                      {/* Tooltip box */}
+                      { user.fullFolderPath && <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center">
+                        <span className="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-gray-800 shadow-lg rounded">
+                          {user.fullFolderPath}
+                        </span>
+                        {/* Tooltip Arrow */}
+                        <div className="w-3 h-3 -mt-2 rotate-45 bg-gray-800"></div>
+                      </div> }
                     </div>
                   ) : (
                     <span className="text-gray-400 italic">None</span>
@@ -81,7 +92,7 @@ export function UsersTable() {
                     <span className="text-gray-300">-</span>
                   )}
                 </td>
-                
+
                 <td className="px-6 py-4 text-center">
                   {user.status === "hosting" ? (
                     <span className="font-semibold text-gray-700">
@@ -93,27 +104,30 @@ export function UsersTable() {
                 </td>
 
                 <td className="px-6 py-4 text-center">
-                  { user.status === "hosting" ? <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white transition-all bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 active:scale-95"
-                  onClick={() => handleConnectToHost(user.id)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-3.5 h-3.5 opacity-90"
+                  {user.status === "hosting" ? (
+                    <button
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white transition-all bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 active:scale-95"
+                      onClick={() => handleConnectToHost(user.id)}
                     >
-                      <path
-                        fillRule="evenodd"
-                        d="M2 6a2 2 0 012-2h4l2 2h6a2 2 0 012 2v1H2V6z"
-                        clipRule="evenodd"
-                      />
-                      <path d="M2.5 12a.5.5 0 01.5-.5h10a.5.5 0 01.5.5c0 .5-.5 1-.5 1H3a.5.5 0 01-.5-.5z" />
-                      <path d="M2 15a2 2 0 002 2h12a2 2 0 002-2V9H2v6z" />
-                    </svg>
-                    Browse Files
-                  </button>
-                  : <span className="text-gray-300">-</span>  
-                }
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="w-3.5 h-3.5 opacity-90"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M2 6a2 2 0 012-2h4l2 2h6a2 2 0 012 2v1H2V6z"
+                          clipRule="evenodd"
+                        />
+                        <path d="M2.5 12a.5.5 0 01.5-.5h10a.5.5 0 01.5.5c0 .5-.5 1-.5 1H3a.5.5 0 01-.5-.5z" />
+                        <path d="M2 15a2 2 0 002 2h12a2 2 0 002-2V9H2v6z" />
+                      </svg>
+                      Browse Files
+                    </button>
+                  ) : (
+                    <span className="text-gray-300">-</span>
+                  )}
                 </td>
               </tr>
             ))}

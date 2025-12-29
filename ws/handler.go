@@ -38,6 +38,7 @@ type hostingUpdate struct {
 	Folder              string `json:"folder"`
 	IsPublic            bool   `json:"isPublic"`
 	ActiveTransferences int    `json:"activeTransferences"`
+	FullFolderPath      string `json:"fullFolderPath"`
 }
 
 type connectedUserUpdate struct {

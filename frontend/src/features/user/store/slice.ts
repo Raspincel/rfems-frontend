@@ -51,6 +51,7 @@ const userSlice = createSlice({
           folderBeingHosted: action.payload.folder,
           activeTransfers: action.payload.activeTransferences,
           status: action.payload.status,
+          fullFolderPath: action.payload.fullFolderPath,
         };
       });
     },

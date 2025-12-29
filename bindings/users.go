@@ -125,6 +125,7 @@ type UserBasicInfo struct {
 	LastActiveAt      string `json:"lastActiveAt"`
 	Status            string `json:"status"`
 	FolderBeingHosted string `json:"folderBeingHosted"`
+	FullFolderPath    string `json:"fullFolderPath"`
 	IsPublic          bool   `json:"isPublic"`
 }
 
