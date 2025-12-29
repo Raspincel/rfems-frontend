@@ -31,7 +31,7 @@ func ListFiles(basePath string, path []string) ([]File, error) {
 		return nil, err
 	}
 
-	var files []File
+	files := []File{}
 	for _, fileInfo := range fileInfos {
 		files = append(files, File{
 			Name:  fileInfo.Name(),
