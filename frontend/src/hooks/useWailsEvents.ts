@@ -3,6 +3,7 @@ import { EventsOn } from "../../wailsjs/runtime/runtime";
 import { useDispatch } from "react-redux";
 import { updateUserHostingStatus, updateUserStatus } from "../features/user";
 import {
+  removeClient,
   removeDisconnectedUser,
   updateConnectedUser,
 } from "../features/hosting";
@@ -28,6 +29,9 @@ export function useWailsEvents() {
       }),
       EventsOn("files:received_files_list", (data) => {
         dispatch(updateFilesList(data));
+      }),
+      EventsOn("session:client_left_session", (data) => {
+        dispatch(removeClient(data));
       }),
     ];
 

@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { connectToHost, requestFiles } from "../api";
+import { connectToHost, exitHostingSession, requestFiles } from "../api";
 import { APIReturn, ThunkConfig } from "../../../app/store";
 import {
   ConnectToHostData,
@@ -41,6 +41,29 @@ export const requestFilesListThunk = createAsyncThunk<
     if (!response.success) {
       return rejectWithValue({
         message: response.message || "Failed to retrieve files",
+        errors: response.errors,
+      });
+    }
+
+    return response;
+  } catch (error) {
+    return rejectWithValue({
+      message: (error as Error).message || "An unexpected error occurred",
+    });
+  }
+});
+
+export const exitHostingSessionThunk = createAsyncThunk<
+  APIReturn<void>,
+  void,
+  ThunkConfig
+>("explorer/exitHostingSession", async (_, { rejectWithValue }) => {
+  try {
+    const response = await exitHostingSession();
+
+    if (!response.success) {
+      return rejectWithValue({
+        message: response.message || "Failed to exit hosting session",
         errors: response.errors,
       });
     }

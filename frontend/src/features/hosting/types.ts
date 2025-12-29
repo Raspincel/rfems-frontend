@@ -37,3 +37,7 @@ export interface UserUpdated {
   userId: string;
   status: "online" | "hosting" | "offline";
 }
+
+export interface RemoveClient {
+  userId: string;
+}

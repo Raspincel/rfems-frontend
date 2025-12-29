@@ -6,6 +6,8 @@ export function ChooseFolder():Promise<bindings.Response_frontend_bindings_Selec
 
 export function ConnectToHost(arg1:string):Promise<bindings.Response_frontend_bindings_ConnectToHostResponse_>;
 
+export function ExitHostingSession():Promise<bindings.Response_interface____>;
+
 export function GetUsersList():Promise<bindings.Response___frontend_bindings_UserBasicInfo_>;
 
 export function IsLoggedIn():Promise<boolean>;

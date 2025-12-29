@@ -4,7 +4,11 @@ import {
   ExplorerState,
   UpdateFilesList,
 } from "../types";
-import { connectToHostThunk, requestFilesListThunk } from "./thunks";
+import {
+  connectToHostThunk,
+  exitHostingSessionThunk,
+  requestFilesListThunk,
+} from "./thunks";
 import { toast } from "react-toastify";
 import { createAppSelector } from "../../../app/hooks";
 import { RootState } from "../../../app/store";
@@ -84,6 +88,26 @@ const hostingSlice = createSlice({
           state.status = "failed";
           state.error = action.payload!.message;
           toast.error(state.error || "Failed to retrieve files");
+        },
+      })
+      .addAsyncThunk(exitHostingSessionThunk, {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        fulfilled: (state, action) => {
+          state.status = "succeeded";
+          state.error = null;
+          state.connected = false;
+          state.hostID = null;
+          state.files = [];
+          state.folders = [];
+          state.path = [];
+          toast.info(action.payload.message);
+        },
+        rejected: (state, action) => {
+          state.status = "failed";
+          state.error = action.payload!.message;
+          toast.error(state.error || "Failed to exit hosting session");
         },
       });
   },

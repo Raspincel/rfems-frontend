@@ -10,6 +10,10 @@ export function ConnectToHost(arg1) {
   return window['go']['bindings']['app']['ConnectToHost'](arg1);
 }
 
+export function ExitHostingSession() {
+  return window['go']['bindings']['app']['ExitHostingSession']();
+}
+
 export function GetUsersList() {
   return window['go']['bindings']['app']['GetUsersList']();
 }

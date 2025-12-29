@@ -59,6 +59,10 @@ type receivedFilesList struct {
 	Files []files.File `json:"files"`
 }
 
+type clientLeftSession struct {
+	UserID string `json:"userId"`
+}
+
 func HandleEvent(event *EventData) {
 	var envelope messageEnvelope
 
@@ -139,6 +143,17 @@ func HandleEvent(event *EventData) {
 		}
 
 		runtime.EventsEmit(event.Ctx, "files:received_files_list", filesListPayload)
+	case "client_left_session":
+		var clientLeft clientLeftSession
+
+		err := json.Unmarshal(envelope.Payload, &clientLeft)
+
+		if err != nil {
+			fmt.Println("Error unmarshaling client left session:", err)
+			return
+		}
+
+		runtime.EventsEmit(event.Ctx, "session:client_left_session", clientLeft)
 	}
 }
 

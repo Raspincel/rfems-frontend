@@ -10,6 +10,7 @@ import {
   FilesSection,
   ContextMenu,
   ExplorerHeader,
+  ExitButton,
 } from "../features/explorer";
 import { useNavigate } from "react-router-dom";
 import {
@@ -72,7 +73,10 @@ export function ExploreFolderPage() {
 
   return (
     <DashboardLayout currentRoute="explore-folder">
-      <ExplorerHeader />
+      <div className="flex flex-col gap-2">
+        <ExitButton />
+        <ExplorerHeader />
+      </div>
 
       <div className="relative min-h-[400px]">
         <div className="mb-8">

@@ -137,6 +137,7 @@ export namespace bindings {
 	    lastActiveAt: string;
 	    status: string;
 	    folderBeingHosted: string;
+	    fullFolderPath: string;
 	    isPublic: boolean;
 	
 	    static createFrom(source: any = {}) {
@@ -150,6 +151,7 @@ export namespace bindings {
 	        this.lastActiveAt = source["lastActiveAt"];
 	        this.status = source["status"];
 	        this.folderBeingHosted = source["folderBeingHosted"];
+	        this.fullFolderPath = source["fullFolderPath"];
 	        this.isPublic = source["isPublic"];
 	    }
 	}
