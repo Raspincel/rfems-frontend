@@ -54,7 +54,7 @@ export default function FilesSection({
   };
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border rounded-lg">
       <table className="w-full">
         <thead className="bg-gray-50">
           <tr>
