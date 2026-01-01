@@ -15,12 +15,7 @@ import {
   selectNumberOfFolders,
 } from "../features/explorer";
 import { useNavigate } from "react-router-dom";
-import {
-  File as FileIcon,
-  FolderOpen,
-  FolderX,
-  Loader2,
-} from "lucide-react";
+import { File as FileIcon, FolderOpen, FolderX, Loader2 } from "lucide-react";
 
 export function ExploreFolderPage() {
   const isConnectedToHost = useAppSelector(selectIsConnectedToHost);
@@ -31,8 +26,8 @@ export function ExploreFolderPage() {
   const [contextMenu, setContextMenu] = useState<ContextMenuData | null>(null);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-  const numberOfFiles = useAppSelector(selectNumberOfFiles)
-  const numberOfFolders = useAppSelector(selectNumberOfFolders)
+  const numberOfFiles = useAppSelector(selectNumberOfFiles);
+  const numberOfFolders = useAppSelector(selectNumberOfFolders);
 
   useEffect(() => {
     if (!isConnectedToHost) {
@@ -43,22 +38,6 @@ export function ExploreFolderPage() {
   useEffect(() => {
     dispatch(requestFilesListThunk({ path: [] }));
   }, [dispatch]);
-
-  const handleContextMenu = (
-    e: React.MouseEvent,
-    item: ContextMenuData["item"]
-  ) => {
-    e.preventDefault();
-    setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      item,
-    });
-  };
-
-  const handleItemClick = (name: string) => {
-    setSelectedItem(name);
-  };
 
   if (isLoading) {
     return (
@@ -76,47 +55,83 @@ export function ExploreFolderPage() {
       </DashboardLayout>
     );
   }
-  
+
+  const handleContextMenu = (
+    e: React.MouseEvent,
+    item: ContextMenuData["item"]
+  ) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (selectedItem !== item.name) {
+      setSelectedItem(item.name)
+    } 
+
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      item,
+    });
+  };
+
+  const handleItemClick = (name: string) => {
+    setSelectedItem(name);
+  };
+
+  const handleBackgroundClick = (e: React.MouseEvent) => {
+    if (!selectedItem || contextMenu) return;
+
+    if (e.target === e.currentTarget || e.currentTarget.contains(e.target as Node)) {
+      setSelectedItem(null);
+    }
+  };
+
   const showFolders = numberOfFolders > 0;
   const showFiles = numberOfFiles > 0;
 
   return (
-    <DashboardLayout currentRoute="explore-folder">
+    <DashboardLayout
+      currentRoute="explore-folder"
+      onClick={handleBackgroundClick}
+    >
       <div className="flex flex-col gap-2">
         <ExitButton />
         <ExplorerHeader />
       </div>
 
-      {showFolders && showFiles ? 
-      <div className="relative min-h-[400px]">
-        {showFolders && <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <FolderOpen className="w-5 h-5" />
-            Folders
-          </h2>
+      {showFolders && showFiles ? (
+        <div className="relative min-h-[400px]">
+          {showFolders && (
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FolderOpen className="w-5 h-5" />
+                Folders
+              </h2>
 
-          <FoldersSection
-            handleItemClick={handleItemClick}
-            selectedItem={selectedItem}
-            handleContextMenu={handleContextMenu}
-          />
-        </div> }
+              <FoldersSection
+                onItemClick={handleItemClick}
+                selectedItem={selectedItem}
+                onContextMenu={handleContextMenu}
+              />
+            </div>
+          )}
 
-        {showFiles && <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <FileIcon className="w-5 h-5" />
-            Files
-          </h2>
+          {showFiles && (
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FileIcon className="w-5 h-5" />
+                Files
+              </h2>
 
-          <FilesSection
-            handleItemClick={handleItemClick}
-            selectedItem={selectedItem}
-            handleContextMenu={handleContextMenu}
-          />
-        </div> }
-      </div> 
-      : 
-      <div className="relative min-h-[200px] flex items-center justify-center">
+              <FilesSection
+                onItemClick={handleItemClick}
+                selectedItem={selectedItem}
+                onContextMenu={handleContextMenu}
+              />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="relative min-h-[200px] flex items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-center max-w-md">
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
               <FolderX className="w-8 h-8 text-gray-400" />
@@ -131,9 +146,12 @@ export function ExploreFolderPage() {
             </div>
           </div>
         </div>
-      }
+      )}
 
-      <ContextMenu contextMenu={contextMenu} setContextMenu={setContextMenu} />
+      <ContextMenu
+        contextMenu={contextMenu}
+        onCloseContextMenu={() => setContextMenu(null)}
+      />
     </DashboardLayout>
   );
 }

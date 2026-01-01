@@ -4,9 +4,9 @@ import { selectFiles } from "../store/slices";
 import { ContextMenuData } from "../types";
 
 interface Props {
-  handleItemClick: (item: string) => void;
+  onItemClick: (item: string) => void;
   selectedItem: string | null;
-  handleContextMenu: (
+  onContextMenu: (
     e: React.MouseEvent,
     item: ContextMenuData['item']
   ) => void;
@@ -27,10 +27,15 @@ const formatFileSize = (bytes: number): string => {
   return sizeInCorrectBracket.toFixed(2) + " " + sizes[bracketIndex];
 };
 
-export default function FilesSection({ handleContextMenu, handleItemClick, selectedItem }: Props) {
+export default function FilesSection({ onContextMenu, onItemClick, selectedItem }: Props) {
   const files = useAppSelector(selectFiles);
 
   if (!files.length) null;
+
+  const handleItemClick = (e: React.MouseEvent, name: string) => {
+    e.stopPropagation();
+    onItemClick(name);
+  }
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -49,12 +54,12 @@ export default function FilesSection({ handleContextMenu, handleItemClick, selec
           {files.map((file) => (
             <tr
               key={file.name}
-              className={`border-t hover:bg-gray-50 cursor-pointer ${
-                selectedItem === file.name ? "bg-blue-50" : ""
+              className={`border-t cursor-pointer ${
+                selectedItem === file.name ? "bg-blue-50 hover:bg-blue-100" : ""
               }`}
-              onClick={() => handleItemClick(file.name)}
+              onClick={(e) => handleItemClick(e, file.name)}
               onContextMenu={(e) =>
-                handleContextMenu(e, { name: file.name, isDir: false })
+                onContextMenu(e, { name: file.name, isDir: false })
               }
             >
               <td className="py-3 px-4">

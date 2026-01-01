@@ -5,9 +5,9 @@ import { ContextMenuData } from "../types"
 
 interface Props {
   contextMenu: ContextMenuData | null;
-  setContextMenu: (data: ContextMenuData | null) => void;
+  onCloseContextMenu: () => void;
 }
-export default function ContextMenu({ contextMenu, setContextMenu }: Props) {
+export default function ContextMenu({ contextMenu, onCloseContextMenu }: Props) {
   const currentPath = useAppSelector(selectCurrentPath);
   const dispatch = useAppDispatch();
 
@@ -17,13 +17,20 @@ export default function ContextMenu({ contextMenu, setContextMenu }: Props) {
   const handleOpenFolder = (folderName: string) => {
     const newPath = [...currentPath, folderName];
     dispatch(requestFilesListThunk({ path: newPath }));
+    onCloseContextMenu();
   };
 
   return (
       <>
         <div
           className="fixed inset-0 z-40"
-          onClick={() => setContextMenu(null)}
+          onClick={() => {
+            onCloseContextMenu()
+          }}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            onCloseContextMenu();
+          }}
         />
         <div
           className="fixed z-50 bg-white rounded-lg shadow-lg border py-1 min-w-[180px]"
@@ -41,13 +48,13 @@ export default function ContextMenu({ contextMenu, setContextMenu }: Props) {
                 Open folder
               </button>
               <button
-                onClick={() => setContextMenu(null)}
+                onClick={() => onCloseContextMenu()}
                 className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
               >
                 Rename
               </button>
               <button
-                onClick={() => setContextMenu(null)}
+                onClick={() => onCloseContextMenu()}
                 className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
               >
                 Delete
@@ -56,19 +63,19 @@ export default function ContextMenu({ contextMenu, setContextMenu }: Props) {
           ) : (
             <>
               <button
-                onClick={() => setContextMenu(null)}
+                onClick={() => onCloseContextMenu()}
                 className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
               >
                 Download
               </button>
               <button
-                onClick={() => setContextMenu(null)}
+                onClick={() => onCloseContextMenu()}
                 className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
               >
                 Rename
               </button>
               <button
-                onClick={() => setContextMenu(null)}
+                onClick={() => onCloseContextMenu()}
                 className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
               >
                 Delete

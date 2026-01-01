@@ -7,9 +7,10 @@ import { fetchUserThunk, selectProfileStatus } from "../features/user";
 interface Props {
   children: ReactNode;
   currentRoute: string;
+  onClick?: (e: React.MouseEvent) => void
 }
 
-export function DashboardLayout({ children, currentRoute }: Props) {
+export function DashboardLayout({ children, currentRoute, onClick }: Props) {
   const dispatch = useAppDispatch();
   const profileStatus = useAppSelector(selectProfileStatus);
   
@@ -19,7 +20,7 @@ export function DashboardLayout({ children, currentRoute }: Props) {
   }, [profileStatus])
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans" onClick={onClick}>
       <Sidebar currentRoute={currentRoute} />
 
       <div className="flex-1 flex flex-col min-w-0">
