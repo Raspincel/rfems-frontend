@@ -34,7 +34,7 @@ export default function ContextMenu({
 }: Props) {
   const currentPath = useAppSelector(selectCurrentPath);
   const dispatch = useAppDispatch();
-  const menu = useRef<HTMLDivElement>(null);
+  const menu = useRef<HTMLDialogElement>(null);
   const previouslyFocusedElement = useRef<Element>(null);
   const options = contextMenu?.item.isDir ? folderOptions : fileOptions;
 
@@ -43,12 +43,10 @@ export default function ContextMenu({
     previouslyFocusedElement.current = document.activeElement;
   }, [contextMenu]);
 
+
   useEffect(() => {
     if (!contextMenu || !menu.current) return;
-
-    const firstButton = menu.current.querySelector<HTMLButtonElement>("button");
-
-    firstButton?.focus();
+    menu.current.showModal();
 
     const rect = menu.current.getBoundingClientRect();
     const maxY = window.innerHeight;
@@ -65,8 +63,7 @@ export default function ContextMenu({
       x = x - rect.width;
     }
 
-    menu.current.style.left = `${x}px`;
-    menu.current.style.top = `${y}px`;
+    menu.current.style.margin = `${y}px 0px 0px ${x}px`;
   }, [contextMenu, menu.current]);
 
   if (!contextMenu) return null;
@@ -84,8 +81,8 @@ export default function ContextMenu({
     if (index === options.length - 1 && e.shiftKey) return;
 
     e.preventDefault();
-    onCloseContextMenu();
-    (previouslyFocusedElement.current as HTMLButtonElement)?.focus();
+    handleCloseMenu();
+    (previouslyFocusedElement.current as HTMLButtonElement)!.focus();
   };
 
   const handleAction = (action: action) => {
@@ -108,24 +105,23 @@ export default function ContextMenu({
         assert(actionId);
     }
 
-    onCloseContextMenu();
+    handleCloseMenu();
   };
+
+  const handleCloseMenu = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    onCloseContextMenu();
+    menu.current!.close();
+  }
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-40"
-        onClick={() => {
-          onCloseContextMenu();
-        }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          onCloseContextMenu();
-        }}
-      />
-      <div
+      <dialog
         className="fixed z-50 bg-white rounded-lg shadow-lg border py-1 min-w-[180px]"
         ref={menu}
+        closedby="any"
+        onClick={handleCloseMenu}
+        onContextMenu={handleCloseMenu}
       >
         <>
           {options.map((option, index) => {
@@ -143,7 +139,7 @@ export default function ContextMenu({
             );
           })}
         </>
-      </div>
+      </dialog>
     </>
   );
 }
