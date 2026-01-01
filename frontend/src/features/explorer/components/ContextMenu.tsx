@@ -1,88 +1,149 @@
+import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { selectCurrentPath } from "../store/slices";
 import { requestFilesListThunk } from "../store/thunks";
-import { ContextMenuData } from "../types"
+import { ContextMenuData } from "../types";
 
 interface Props {
   contextMenu: ContextMenuData | null;
   onCloseContextMenu: () => void;
 }
-export default function ContextMenu({ contextMenu, onCloseContextMenu }: Props) {
+
+const folderOptions = [
+  { label: "Open folder", id: "open-folder", color: "gray" },
+  { label: "Rename", id: "rename-folder", color: "gray" },
+  { label: "Delete", id: "delete-folder", color: "red" },
+] as const;
+
+const fileOptions = [
+  { label: "Download", id: "download-file", color: "gray" },
+  { label: "Rename", id: "rename-file", color: "gray" },
+  { label: "Delete", id: "delete-file", color: "red" },
+] as const;
+
+type action =
+  | (typeof folderOptions)[number]["id"]
+  | (typeof fileOptions)[number]["id"];
+const assert = (a: never) => {
+  throw new Error("Never arrives here");
+};
+
+export default function ContextMenu({
+  contextMenu,
+  onCloseContextMenu,
+}: Props) {
   const currentPath = useAppSelector(selectCurrentPath);
   const dispatch = useAppDispatch();
+  const menu = useRef<HTMLDivElement>(null);
+  const previouslyFocusedElement = useRef<Element>(null);
+  const options = contextMenu?.item.isDir ? folderOptions : fileOptions;
+
+  useEffect(() => {
+    if (!contextMenu) return;
+    previouslyFocusedElement.current = document.activeElement;
+  }, [contextMenu]);
+
+  useEffect(() => {
+    if (!contextMenu || !menu.current) return;
+
+    const firstButton = menu.current.querySelector<HTMLButtonElement>("button");
+
+    firstButton?.focus();
+
+    const rect = menu.current.getBoundingClientRect();
+    const maxY = window.innerHeight;
+    const maxX = window.innerWidth;
+
+    let y = contextMenu.y;
+    let x = contextMenu.x;
+
+    if (contextMenu.y + rect.height > maxY) {
+      y = y - rect.height;
+    }
+
+    if (contextMenu.x + rect.width > maxX) {
+      x = x - rect.width;
+    }
+
+    menu.current.style.left = `${x}px`;
+    menu.current.style.top = `${y}px`;
+  }, [contextMenu, menu.current]);
 
   if (!contextMenu) return null;
 
-    
   const handleOpenFolder = (folderName: string) => {
     const newPath = [...currentPath, folderName];
     dispatch(requestFilesListThunk({ path: newPath }));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key !== "Tab") return;
+
+    if (index !== 0 && index !== options.length - 1) return;
+    if (index === 0 && !e.shiftKey) return;
+    if (index === options.length - 1 && e.shiftKey) return;
+
+    e.preventDefault();
+    onCloseContextMenu();
+    (previouslyFocusedElement.current as HTMLButtonElement)?.focus();
+  };
+
+  const handleAction = (action: action) => {
+    const actionId = action;
+    switch (actionId) {
+      case "open-folder":
+        handleOpenFolder(contextMenu.item.name);
+        break;
+      case "delete-file":
+        break;
+      case "download-file":
+        break;
+      case "rename-file":
+        break;
+      case "delete-folder":
+        break;
+      case "rename-folder":
+        break;
+      default:
+        assert(actionId);
+    }
+
     onCloseContextMenu();
   };
 
   return (
-      <>
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => {
-            onCloseContextMenu()
-          }}
-          onContextMenu={(e) => {
-            e.preventDefault();
-            onCloseContextMenu();
-          }}
-        />
-        <div
-          className="fixed z-50 bg-white rounded-lg shadow-lg border py-1 min-w-[180px]"
-          style={{
-            left: `${contextMenu.x}px`,
-            top: `${contextMenu.y}px`,
-          }}
-        >
-          {contextMenu.item.isDir ? (
-            <>
+    <>
+      <div
+        className="fixed inset-0 z-40"
+        onClick={() => {
+          onCloseContextMenu();
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          onCloseContextMenu();
+        }}
+      />
+      <div
+        className="fixed z-50 bg-white rounded-lg shadow-lg border py-1 min-w-[180px]"
+        ref={menu}
+      >
+        <>
+          {options.map((option, index) => {
+            return (
               <button
-                onClick={() => handleOpenFolder(contextMenu.item.name)}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+                key={option.id}
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                onClick={() => handleAction(option.id)}
+                className={`w-full text-left px-4 py-2 hover:bg-gray-100
+                    ${option.color === "red" ? "text-red-600" : "text-gray-700"}
+                  `}
               >
-                Open folder
+                {option.label}
               </button>
-              <button
-                onClick={() => onCloseContextMenu()}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
-              >
-                Rename
-              </button>
-              <button
-                onClick={() => onCloseContextMenu()}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
-              >
-                Delete
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => onCloseContextMenu()}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
-              >
-                Download
-              </button>
-              <button
-                onClick={() => onCloseContextMenu()}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
-              >
-                Rename
-              </button>
-              <button
-                onClick={() => onCloseContextMenu()}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
-              >
-                Delete
-              </button>
-            </>
-          )}
-        </div>
-      </>
-  )
+            );
+          })}
+        </>
+      </div>
+    </>
+  );
 }

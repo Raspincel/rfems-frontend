@@ -4,13 +4,13 @@ import { selectFiles } from "../store/slices";
 import { ContextMenuData } from "../types";
 
 interface Props {
-  onItemClick: (item: string) => void;
+  onItemClick: (e: React.SyntheticEvent, item: string) => void;
   selectedItem: string | null;
   onContextMenu: (
-    e: React.MouseEvent,
-    item: ContextMenuData['item']
+    e: React.SyntheticEvent,
+    item: ContextMenuData["item"] | null
   ) => void;
-} 
+}
 
 const logBase1024 = (n: number) => {
   return Math.log(n) / Math.log(1024);
@@ -27,15 +27,31 @@ const formatFileSize = (bytes: number): string => {
   return sizeInCorrectBracket.toFixed(2) + " " + sizes[bracketIndex];
 };
 
-export default function FilesSection({ onContextMenu, onItemClick, selectedItem }: Props) {
+export default function FilesSection({
+  onContextMenu,
+  onItemClick,
+  selectedItem,
+}: Props) {
   const files = useAppSelector(selectFiles);
 
   if (!files.length) null;
 
   const handleItemClick = (e: React.MouseEvent, name: string) => {
-    e.stopPropagation();
-    onItemClick(name);
-  }
+    onItemClick(e, name);
+  };
+
+  const handleFocusCapture = (e: React.FocusEvent, name: string) => {
+    onItemClick(e, name);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, name: string) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    onContextMenu(e, { isDir: false, name });
+  };
+
+  const handleContextMenu = (e: React.MouseEvent, name: string) => {
+    onContextMenu(e, { name: name, isDir: false });
+  };
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -58,15 +74,16 @@ export default function FilesSection({ onContextMenu, onItemClick, selectedItem 
                 selectedItem === file.name ? "bg-blue-50 hover:bg-blue-100" : ""
               }`}
               onClick={(e) => handleItemClick(e, file.name)}
-              onContextMenu={(e) =>
-                onContextMenu(e, { name: file.name, isDir: false })
-              }
+              onContextMenu={(e) => handleContextMenu(e, file.name)}
+              tabIndex={0}
+              onFocusCapture={(e) => handleFocusCapture(e, file.name)}
+              onKeyDown={(e) => handleKeyDown(e, file.name)}
             >
               <td className="py-3 px-4">
-                <div className="flex items-center gap-3">
+                <span className="flex items-center gap-3">
                   <FileIcon className="w-5 h-5 text-gray-400" />
                   <span className="font-medium text-gray-900">{file.name}</span>
-                </div>
+                </span>
               </td>
               <td className="py-3 px-4 text-gray-600">
                 {formatFileSize(file.size)}

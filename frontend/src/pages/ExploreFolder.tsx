@@ -57,32 +57,52 @@ export function ExploreFolderPage() {
   }
 
   const handleContextMenu = (
-    e: React.MouseEvent,
-    item: ContextMenuData["item"]
+    e: React.SyntheticEvent,
+    item: ContextMenuData["item"] | null
   ) => {
     e.stopPropagation();
     e.preventDefault();
+
+    if (!item) {
+      setSelectedItem(null);
+      return
+    }
+
     if (selectedItem !== item.name) {
       setSelectedItem(item.name)
     } 
 
-    setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      item,
-    });
-  };
-
-  const handleItemClick = (name: string) => {
-    setSelectedItem(name);
-  };
-
-  const handleBackgroundClick = (e: React.MouseEvent) => {
-    if (!selectedItem || contextMenu) return;
-
-    if (e.target === e.currentTarget || e.currentTarget.contains(e.target as Node)) {
-      setSelectedItem(null);
+    if (e.type === "contextmenu") {
+      const event = e as unknown as React.MouseEvent
+      setContextMenu({
+        x: event.clientX,
+        y: event.clientY,
+        item,
+      });
+      return
     }
+    
+    if (e.type === "keydown")  {
+      const target = e.target as HTMLElement;
+      const rect = target.getBoundingClientRect();
+      const x = rect.x + (rect.width / 6)
+      const y = rect.y + (rect.height / 2)
+      setContextMenu({ x, y, item })
+    }
+  };
+
+  const handleItemClick = (e: React.SyntheticEvent, name: string) => {
+    e.stopPropagation();
+    setSelectedItem(name);
+
+    if (contextMenu) {
+      setContextMenu(null)
+    }
+  };
+
+  const handleBackgroundClick = () => {
+    if (!selectedItem || contextMenu) return;
+    setSelectedItem(null);
   };
 
   const showFolders = numberOfFolders > 0;
