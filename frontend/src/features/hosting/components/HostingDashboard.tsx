@@ -13,7 +13,13 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { DashboardLayout } from "../../../layouts/DashboardLayout";
 import { stopHostingThunk } from "../store/thunks";
-import { selectFolderPath, selectIsPublic, selectActiveUsers, selectPendingUsers } from "../store/slice";
+import {
+  selectFolderPath,
+  selectIsPublic,
+  selectActiveUsers,
+  selectPendingUsers,
+} from "../store/slice";
+import { Button } from "../../../components/ui/Button";
 
 export default function HostingDashboard() {
   const dispatch = useAppDispatch();
@@ -21,7 +27,7 @@ export default function HostingDashboard() {
   const isPublic = useAppSelector(selectIsPublic);
   const activeUsers = useAppSelector(selectActiveUsers);
   const pendingUsers = useAppSelector(selectPendingUsers);
-  
+
   const handleStopHosting = () => {
     dispatch(stopHostingThunk());
   };
@@ -38,13 +44,18 @@ export default function HostingDashboard() {
             <h1 className="text-3xl font-bold text-gray-900">Hosting Folder</h1>
             <p className="text-gray-600 mt-1">Managing active folder sharing</p>
           </div>
-          <button
+          <Button
+            maxWidth="sm"
+            theme="danger"
+            ariaLabel="Stop hosting session"
             onClick={handleStopHosting}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
-            <X className="w-4 h-4" />
-            Stop Hosting
-          </button>
+            label={
+              <span className="flex items-center gap-1">
+                <X className="w-4 h-4" />
+                Stop Hosting
+              </span>
+            }
+          />
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-6">
