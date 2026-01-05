@@ -18,6 +18,8 @@ export function Logout():Promise<bindings.Response_interface____>;
 
 export function Me():Promise<bindings.Response_frontend_bindings_Me_>;
 
+export function RequestFileDownload(arg1:Array<string>):Promise<bindings.Response_frontend_bindings_RequestFileResponse_>;
+
 export function RequestFilesList(arg1:Array<string>):Promise<bindings.Response_interface____>;
 
 export function SendUpdateOnClientPath(arg1:Array<string>):Promise<void>;

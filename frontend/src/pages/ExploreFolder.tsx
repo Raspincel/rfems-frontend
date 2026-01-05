@@ -16,6 +16,7 @@ import {
 } from "../features/explorer";
 import { useNavigate } from "react-router-dom";
 import { File as FileIcon, FolderOpen, FolderX, Loader2 } from "lucide-react";
+import { Transferences } from "../features/transference";
 
 export function ExploreFolderPage() {
   const isConnectedToHost = useAppSelector(selectIsConnectedToHost);
@@ -65,29 +66,29 @@ export function ExploreFolderPage() {
 
     if (!item) {
       setSelectedItem(null);
-      return
+      return;
     }
 
     if (selectedItem !== item.name) {
-      setSelectedItem(item.name)
-    } 
+      setSelectedItem(item.name);
+    }
 
     if (e.type === "contextmenu") {
-      const event = e as unknown as React.MouseEvent
+      const event = e as unknown as React.MouseEvent;
       setContextMenu({
         x: event.clientX,
         y: event.clientY,
         item,
       });
-      return
+      return;
     }
-    
-    if (e.type === "keydown")  {
+
+    if (e.type === "keydown") {
       const target = e.target as HTMLElement;
       const rect = target.getBoundingClientRect();
-      const x = rect.x + (rect.width / 6)
-      const y = rect.y + (rect.height / 2)
-      setContextMenu({ x, y, item })
+      const x = rect.x + rect.width / 6;
+      const y = rect.y + rect.height / 2;
+      setContextMenu({ x, y, item });
     }
   };
 
@@ -96,7 +97,7 @@ export function ExploreFolderPage() {
     setSelectedItem(name);
 
     if (contextMenu) {
-      setContextMenu(null)
+      setContextMenu(null);
     }
   };
 
@@ -118,8 +119,10 @@ export function ExploreFolderPage() {
         <ExplorerHeader />
       </div>
 
-      {showFolders && showFiles ? (
-        <div className="relative min-h-[400px]">
+      <Transferences />
+
+      {showFolders || showFiles ? (
+        <div className="relative min-h-[400px] select-none mb-16">
           {showFolders && (
             <div className="mb-8">
               <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">

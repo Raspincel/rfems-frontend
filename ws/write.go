@@ -87,3 +87,24 @@ func SendClientPathUpdate(path []string, base *baseWriteData) {
 
 	base.Ch <- message
 }
+
+func RequestFileDownload(path []string, base *baseWriteData) (string, error) {
+	payload, err := util.ToRawMessage(map[string]any{
+		"path": path,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	message := WriteMessage{
+		ID:         base.ID,
+		Type:       "request_file_download",
+		Ticket:     base.Ticket,
+		RawPayload: payload,
+	}
+
+	base.Ch <- message
+
+	return message.ID, nil
+}

@@ -131,6 +131,22 @@ export namespace bindings {
 		    return a;
 		}
 	}
+	export class RequestFileResponse {
+	    id: string;
+	    destinationPath: string;
+	    originPath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RequestFileResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.destinationPath = source["destinationPath"];
+	        this.originPath = source["originPath"];
+	    }
+	}
 	export class UserBasicInfo {
 	    name: string;
 	    id: string;
@@ -285,6 +301,44 @@ export namespace bindings {
 	        this.success = source["success"];
 	        this.message = source["message"];
 	        this.data = this.convertValues(source["data"], Me);
+	        this.meta = this.convertValues(source["meta"], Meta);
+	        this.errors = this.convertValues(source["errors"], Error);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class Response_frontend_bindings_RequestFileResponse_ {
+	    success: boolean;
+	    message: string;
+	    data: RequestFileResponse;
+	    meta: Meta;
+	    errors?: Error[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Response_frontend_bindings_RequestFileResponse_(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.success = source["success"];
+	        this.message = source["message"];
+	        this.data = this.convertValues(source["data"], RequestFileResponse);
 	        this.meta = this.convertValues(source["meta"], Meta);
 	        this.errors = this.convertValues(source["errors"], Error);
 	    }

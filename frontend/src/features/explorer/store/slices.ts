@@ -23,7 +23,7 @@ const initialState: ExplorerState = {
   status: "idle",
 };
 
-const hostingSlice = createSlice({
+const explorerSlice = createSlice({
   name: "explorer",
   initialState,
   reducers: {
@@ -113,7 +113,7 @@ const hostingSlice = createSlice({
   },
 });
 
-const { disconnectFromHost, updateFilesList } = hostingSlice.actions;
+const { disconnectFromHost, updateFilesList } = explorerSlice.actions;
 
 export { disconnectFromHost, updateFilesList };
 
@@ -145,4 +145,4 @@ export const selectRootFolder = createAppSelector(
     users.find((user) => user.id === hostID)?.folderBeingHosted || null
 );
 
-export default hostingSlice.reducer;
+export default explorerSlice.reducer;

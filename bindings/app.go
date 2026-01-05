@@ -19,6 +19,11 @@ type hosting struct {
 	basePath  string
 }
 
+type download struct {
+	path   string
+	status string
+}
+
 type app struct {
 	ctx                  context.Context
 	communicationChannel chan ws.WriteMessage
@@ -29,6 +34,7 @@ type app struct {
 	hosting              hosting
 	messagesQueue        []message
 	totalMessages        atomic.Int32
+	downloads            map[string]download
 }
 
 type Response[T any] struct {
@@ -62,6 +68,8 @@ func NewApp() *app {
 			Timeout: 90 * time.Second,
 		},
 		communicationChannel: make(chan ws.WriteMessage),
+		downloads:            map[string]download{},
+		messagesQueue:        []message{},
 	}
 }
 

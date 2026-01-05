@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { selectCurrentPath } from "../store/slices";
 import { requestFilesListThunk } from "../store/thunks";
 import { ContextMenuData } from "../types";
+import { requestFileDownloadThunk } from "../../transference";
 
 interface Props {
   contextMenu: ContextMenuData | null;
@@ -24,7 +25,7 @@ const fileOptions = [
 type action =
   | (typeof folderOptions)[number]["id"]
   | (typeof fileOptions)[number]["id"];
-const assert = (a: never) => {
+const assert = (_: never) => {
   throw new Error("Never arrives here");
 };
 
@@ -42,7 +43,6 @@ export default function ContextMenu({
     if (!contextMenu) return;
     previouslyFocusedElement.current = document.activeElement;
   }, [contextMenu]);
-
 
   useEffect(() => {
     if (!contextMenu || !menu.current) return;
@@ -73,6 +73,11 @@ export default function ContextMenu({
     dispatch(requestFilesListThunk({ path: newPath }));
   };
 
+  const handleDownloadFile = (fileName: string) => {
+    const path = [...currentPath, fileName];
+    dispatch(requestFileDownloadThunk({ path }));
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key !== "Tab") return;
 
@@ -94,6 +99,7 @@ export default function ContextMenu({
       case "delete-file":
         break;
       case "download-file":
+        handleDownloadFile(contextMenu.item.name)
         break;
       case "rename-file":
         break;
@@ -112,7 +118,7 @@ export default function ContextMenu({
     e?.preventDefault();
     onCloseContextMenu();
     menu.current!.close();
-  }
+  };
 
   return (
     <>

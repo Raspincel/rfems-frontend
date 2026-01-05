@@ -34,6 +34,10 @@ export function Me() {
   return window['go']['bindings']['app']['Me']();
 }
 
+export function RequestFileDownload(arg1) {
+  return window['go']['bindings']['app']['RequestFileDownload'](arg1);
+}
+
 export function RequestFilesList(arg1) {
   return window['go']['bindings']['app']['RequestFilesList'](arg1);
 }
