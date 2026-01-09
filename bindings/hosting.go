@@ -1,12 +1,8 @@
 package bindings
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"os"
+	"frontend/api"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -15,7 +11,7 @@ type SelectedFolder struct {
 	Path string `json:"path"`
 }
 
-func (a *app) ChooseFolder() Response[SelectedFolder] {
+func (a *app) ChooseFolder() api.Response[SelectedFolder] {
 	selection, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
 		Title:                      "Select a folder to host",
 		DefaultDirectory:           "",
@@ -26,13 +22,13 @@ func (a *app) ChooseFolder() Response[SelectedFolder] {
 	})
 
 	if err != nil {
-		return Response[SelectedFolder]{
+		return api.Response[SelectedFolder]{
 			Success: false,
 			Message: fmt.Sprintf("Failed to open folder selection dialog: %s", err.Error()),
 		}
 	}
 
-	return Response[SelectedFolder]{
+	return api.Response[SelectedFolder]{
 		Success: true,
 		Data: SelectedFolder{
 			Path: selection,
@@ -41,134 +37,24 @@ func (a *app) ChooseFolder() Response[SelectedFolder] {
 	}
 }
 
-type StartHostingRequest struct {
-	FolderPath string `json:"folderPath"`
-	IsPublic   bool   `json:"isPublic"`
+func (a *app) StartHosting(request api.StartHostingRequest) api.Response[any] {
+	response := a.api.StartHosting(request, a.token)
+
+	if response.Success {
+		a.hosting.isHosting = true
+		a.hosting.basePath = request.FolderPath
+	}
+
+	return response
 }
 
-func (a *app) StartHosting(request StartHostingRequest) Response[any] {
-	values := map[string]any{
-		"folderPath": request.FolderPath,
-		"isPublic":   request.IsPublic,
-		"separator":  string(os.PathSeparator),
+func (a *app) StopHosting(status string) api.Response[any] {
+	response := a.api.StopHosting(status, a.token)
+
+	if response.Success {
+		a.hosting.isHosting = false
+		a.hosting.basePath = ""
 	}
 
-	jsonData, err := json.Marshal(values)
-
-	if err != nil {
-		return Response[any]{
-			Success: false,
-			Message: "Failed to marshal start hosting data",
-		}
-	}
-
-	req, err := http.NewRequest("PUT", a.buildApiUrl("/v1/sessions/start-hosting"), bytes.NewBuffer(jsonData))
-
-	if err != nil {
-		return Response[any]{
-			Success: false,
-			Message: "Failed to create start hosting request",
-		}
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+a.token)
-
-	resp, err := a.client.Do(req)
-
-	if err != nil {
-		return Response[any]{
-			Success: false,
-			Message: "Failed to perform start hosting request: " + err.Error(),
-		}
-	}
-
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		return Response[any]{
-			Success: false,
-			Message: "Failed to read start hosting response body",
-		}
-	}
-
-	var apiResponse Response[any]
-
-	err = json.Unmarshal(body, &apiResponse)
-
-	if err != nil {
-		return Response[any]{
-			Success: false,
-			Message: "Failed to parse start hosting response: " + err.Error(),
-		}
-	}
-
-	a.hosting.isHosting = true
-	a.hosting.basePath = request.FolderPath
-	return apiResponse
-}
-
-func (a *app) StopHosting(status string) Response[any] {
-	values := map[string]string{
-		"status": status,
-	}
-
-	jsonData, err := json.Marshal(values)
-
-	if err != nil {
-		return Response[any]{
-			Success: false,
-			Message: "Failed to marshal stop hosting data",
-		}
-	}
-
-	req, err := http.NewRequest("DELETE", a.buildApiUrl("/v1/sessions/stop-hosting"), bytes.NewBuffer(jsonData))
-
-	if err != nil {
-		return Response[any]{
-			Success: false,
-			Message: "Failed to create stop hosting request",
-		}
-	}
-
-	req.Header.Set("Authorization", "Bearer "+a.token)
-
-	resp, err := a.client.Do(req)
-
-	if err != nil {
-		return Response[any]{
-			Success: false,
-			Message: "Failed to perform stop hosting request: " + err.Error(),
-		}
-	}
-
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		return Response[any]{
-			Success: false,
-			Message: "Failed to read stop hosting response body",
-		}
-	}
-
-	var apiResponse Response[any]
-
-	err = json.Unmarshal(body, &apiResponse)
-
-	if err != nil {
-		return Response[any]{
-			Success: false,
-			Message: "Failed to parse stop hosting response: " + err.Error(),
-		}
-	}
-
-	return apiResponse
-}
-
-type ConnectToHostResponse struct {
-	Ticket string `json:"ticket"`
+	return response
 }

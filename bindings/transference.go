@@ -1,6 +1,7 @@
 package bindings
 
 import (
+	"frontend/api"
 	"frontend/ws"
 	"os"
 	"path/filepath"
@@ -15,7 +16,7 @@ type RequestFileResponse struct {
 	OriginPath      string `json:"originPath"`
 }
 
-func (a *app) RequestFileDownload(filePath []string) Response[RequestFileResponse] {
+func (a *app) RequestFileDownload(filePath []string) api.Response[RequestFileResponse] {
 	originPath := strings.Join(filePath, string(os.PathSeparator))
 	ext := filepath.Ext(originPath)
 
@@ -28,7 +29,7 @@ func (a *app) RequestFileDownload(filePath []string) Response[RequestFileRespons
 	})
 
 	if err != nil {
-		return Response[RequestFileResponse]{
+		return api.Response[RequestFileResponse]{
 			Success: false,
 			Message: "Failed to prepare download",
 		}
@@ -40,7 +41,7 @@ func (a *app) RequestFileDownload(filePath []string) Response[RequestFileRespons
 	}))
 
 	if err != nil {
-		return Response[RequestFileResponse]{
+		return api.Response[RequestFileResponse]{
 			Success: false,
 			Message: "Failed to prepare download",
 		}
@@ -51,7 +52,7 @@ func (a *app) RequestFileDownload(filePath []string) Response[RequestFileRespons
 		status: "preparing",
 	}
 
-	data := Response[RequestFileResponse]{
+	data := api.Response[RequestFileResponse]{
 		Success: true,
 		Message: "Preparing download",
 		Data: RequestFileResponse{

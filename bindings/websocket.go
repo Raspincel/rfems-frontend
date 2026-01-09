@@ -2,97 +2,74 @@ package bindings
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"frontend/ws"
-	"io"
 	"log"
-	"net/http"
-	"net/url"
 
 	"github.com/gorilla/websocket"
 )
 
-func (a *app) connect(apiURL, path, token string, client *http.Client) error {
-	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/api/v1/sessions/connect"}
+type readResult struct {
+	msg []byte
+	err error
+}
 
-	conn, res, err := websocket.DefaultDialer.Dial(u.String(), http.Header{
-		"Authorization": []string{"Bearer " + token},
-	})
+func (a *app) readPump(ctx context.Context, commConn, tranConn *websocket.Conn) {
+	msgCh := make(chan readResult, 2)
 
-	if err != nil {
-		if res.StatusCode > 400 && res.StatusCode < 500 {
-			defer res.Body.Close()
-			body, _ := io.ReadAll(res.Body)
-
-			var response Response[any]
-
-			err = json.Unmarshal(body, &response)
-
+	go func() {
+		for {
+			_, msg, err := commConn.ReadMessage()
 			if err != nil {
-				return fmt.Errorf("Failed to parse error response: %s", err.Error())
+				msgCh <- readResult{nil, err}
+				return
+			}
+			msgCh <- readResult{msg, nil}
+		}
+	}()
+
+	go func() {
+		for {
+			_, msg, err := tranConn.ReadMessage()
+			if err != nil {
+				msgCh <- readResult{nil, err}
+				return
+			}
+			msgCh <- readResult{msg, nil}
+		}
+	}()
+
+	for {
+		select {
+		case data := <-msgCh:
+			if data.err != nil {
+				panic(data.err.Error())
 			}
 
-			return fmt.Errorf("WebSocket connection failed: %s", response.Message)
+			ws.HandleEvent(&ws.EventData{
+				Msg:        data.msg,
+				Ctx:        ctx,
+				IsHosting:  a.hosting.isHosting,
+				BasePath:   a.hosting.basePath,
+				WriteCh:    a.communicationChannel,
+				GenerateID: a.generateMessageID,
+			})
 		}
-
-		return errors.New("Error connecting to WebSocket:" + err.Error())
-	}
-
-	if res.StatusCode != http.StatusSwitchingProtocols {
-		defer res.Body.Close()
-
-		body, _ := io.ReadAll(res.Body)
-
-		var response Response[any]
-
-		err = json.Unmarshal(body, &response)
-
-		if err != nil {
-			return fmt.Errorf("Failed to parse error response: %s", err.Error())
-		}
-
-		return fmt.Errorf("WebSocket connection failed: %s", response.Message)
-	}
-
-	go a.readPump(a.ctx, conn)
-	go writePump(a.ctx, a.communicationChannel, conn)
-
-	return nil
-}
-
-func (a *app) readPump(ctx context.Context, conn *websocket.Conn) {
-	for {
-		_, msg, err := conn.ReadMessage()
-
-		if err != nil {
-			panic(err.Error())
-		}
-
-		ws.HandleEvent(&ws.EventData{
-			Msg:        msg,
-			Ctx:        ctx,
-			IsHosting:  a.hosting.isHosting,
-			BasePath:   a.hosting.basePath,
-			WriteCh:    a.communicationChannel,
-			GenerateID: a.generateMessageID,
-		})
 	}
 }
 
-func writePump(ctx context.Context, ch <-chan ws.WriteMessage, conn *websocket.Conn) {
-	defer conn.Close()
+func writePump(ctx context.Context, ch <-chan ws.WriteMessage, commConn, tranConn *websocket.Conn) {
+	defer commConn.Close()
+	defer tranConn.Close()
 
 	for {
 		select {
 		case msg, ok := <-ch:
 			if !ok {
-				conn.WriteMessage(websocket.CloseMessage, []byte{})
+				commConn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
 
-			if err := conn.WriteJSON(msg); err != nil {
+			if err := commConn.WriteJSON(msg); err != nil {
 				log.Println("WebSocket write error")
 				return
 			}

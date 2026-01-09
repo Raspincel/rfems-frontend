@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"frontend/api"
 	"frontend/ws"
-	"net/http"
 	"os"
 	"strconv"
 	"sync/atomic"
-	"time"
 
 	"github.com/zalando/go-keyring"
 )
@@ -27,33 +26,13 @@ type download struct {
 type app struct {
 	ctx                  context.Context
 	communicationChannel chan ws.WriteMessage
-	client               *http.Client
-	apiURL               string
+	api                  api.API
 	token                string
 	ticket               string
 	hosting              hosting
 	messagesQueue        []message
 	totalMessages        atomic.Int32
 	downloads            map[string]download
-}
-
-type Response[T any] struct {
-	Success bool    `json:"success"`
-	Message string  `json:"message"`
-	Data    T       `json:"data"`
-	Meta    Meta    `json:"meta"`
-	Errors  []Error `json:"errors,omitempty"`
-}
-
-type Meta struct {
-	TraceID   string    `json:"trace_id"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
-type Error struct {
-	Code    string `json:"code"`
-	Field   string `json:"field,omitempty"`
-	Message string `json:"message"`
 }
 
 type message struct {
@@ -63,18 +42,11 @@ type message struct {
 
 func NewApp() *app {
 	return &app{
-		apiURL: os.Getenv("API_URL"),
-		client: &http.Client{
-			Timeout: 90 * time.Second,
-		},
 		communicationChannel: make(chan ws.WriteMessage),
 		downloads:            map[string]download{},
 		messagesQueue:        []message{},
+		api:                  api.NewAPI(),
 	}
-}
-
-func (a *app) buildApiUrl(path string) string {
-	return a.apiURL + path
 }
 
 // startup is called at application startup
@@ -115,19 +87,39 @@ func (a *app) restoreUserSession() {
 		return
 	}
 
-	err = a.connect(a.apiURL, "/api/v1/ws/connect", token, a.client)
+	commConn, err := a.api.Connect("/api/v1/sessions/connect", token)
 
-	if err == nil {
-		a.token = token
+	if err != nil {
+		return
 	}
+
+	tranConn, err := a.api.Connect("/api/v1/transference/connect", token)
+
+	if err != nil {
+		return
+	}
+
+	a.token = token
+	go a.readPump(a.ctx, commConn, tranConn)
+	go writePump(a.ctx, a.communicationChannel, commConn, tranConn)
+
 }
 
 func (a *app) storeUserSession(token string) error {
-	err := a.connect(a.apiURL, "/api/v1/ws/connect", token, a.client)
+	commConn, err := a.api.Connect("/api/v1/sessions/connect", token)
 
 	if err != nil {
-		return errors.New("Failed to connect WebSocket: " + err.Error())
+		return errors.New("Failed to connect communication WebSocket: " + err.Error())
 	}
+
+	tranConn, err := a.api.Connect("/api/v1/transference/connect", token)
+
+	if err != nil {
+		return errors.New("Failed to connect transference WebSocket: " + err.Error())
+	}
+
+	go a.readPump(a.ctx, commConn, tranConn)
+	go writePump(a.ctx, a.communicationChannel, commConn, tranConn)
 
 	err = keyring.Set(serviceName, userKey, token)
 
