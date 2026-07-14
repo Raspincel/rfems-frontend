@@ -11,3 +11,7 @@ export interface LoginRequest {
 }
 
 export interface Register {}
+
+export interface LoginResponse {
+  accessToken: string;
+}

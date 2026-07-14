@@ -2,8 +2,11 @@ package ws
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"frontend/files"
+	"os"
+	"strings"
 )
 
 type filesListRequest struct {
@@ -39,4 +42,48 @@ func handleFilesListRequest(req *filesListRequest) (sendFilesListData, error) {
 	}
 
 	return data, nil
+}
+
+type fileRequestPayload struct {
+	Path []string
+	ID   int
+}
+
+type fileRequestData struct {
+	file *os.File
+	id   int
+}
+
+func (f *fileRequestData) close() {
+	f.file.Close()
+}
+
+// TODO: centralize errors?
+var ErrFileIsDirectory = errors.New("Target file is a directory")
+
+func prepareRequestedFile(basePath string, payload *fileRequestPayload) (*os.File, error) {
+	root, err := os.OpenRoot(basePath)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer root.Close()
+
+	sep := string(os.PathSeparator)
+
+	f, err := root.Open("." + sep + strings.Join(payload.Path, sep))
+
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := f.Stat()
+
+	if s.IsDir() {
+		f.Close()
+		return nil, ErrFileIsDirectory
+	}
+
+	return f, nil
 }

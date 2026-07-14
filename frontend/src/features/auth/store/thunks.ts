@@ -1,24 +1,28 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { Register } from "../types";
+import { LoginResponse, Register } from "../types";
 import { LoginSchema } from "../schemas/login";
 import { loginUser, logoutUser } from "../api";
+import { APIReturn, ThunkConfig } from "../../../app/store";
 
-export const loginThunk = createAsyncThunk(
-  "auth/login",
-  async (data: LoginSchema, { rejectWithValue }) => {
-    try {
-      const response = await loginUser(data);
+export const loginThunk = createAsyncThunk<
+  APIReturn<LoginResponse>,
+  LoginSchema,
+  ThunkConfig
+>("auth/login", async (data: LoginSchema, { rejectWithValue }) => {
+  try {
+    const response = await loginUser(data);
 
-      if (!response.success) {
-        return rejectWithValue(response.message || "Login failed");
-      }
-
-      return response;
-    } catch (err) {
-      return rejectWithValue((err as any)?.response?.message || "Login failed");
+    if (!response.success) {
+      return rejectWithValue({
+        message: response.message || "Login failed",
+      });
     }
+
+    return response;
+  } catch (err) {
+    return rejectWithValue((err as any)?.response?.message || "Login failed");
   }
-);
+});
 
 export const logoutThunk = createAsyncThunk("auth/logout", async () => {
   try {

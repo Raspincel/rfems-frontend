@@ -18,21 +18,22 @@ type hosting struct {
 	basePath  string
 }
 
-type download struct {
-	path   string
-	status string
-}
+type downloads map[int]chan ws.Download
+
+type uploads map[int]chan ws.TransferenceStatus
 
 type app struct {
 	ctx                  context.Context
 	communicationChannel chan ws.WriteMessage
+	transferenceChannel  chan []byte
 	api                  api.API
 	token                string
 	ticket               string
 	hosting              hosting
 	messagesQueue        []message
 	totalMessages        atomic.Int32
-	downloads            map[string]download
+	downloads            downloads
+	uploads              uploads
 }
 
 type message struct {
@@ -42,8 +43,10 @@ type message struct {
 
 func NewApp() *app {
 	return &app{
-		communicationChannel: make(chan ws.WriteMessage),
-		downloads:            map[string]download{},
+		communicationChannel: make(chan ws.WriteMessage, 100),
+		transferenceChannel:  make(chan []byte, 100),
+		downloads:            map[int]chan ws.Download{},
+		uploads:              map[int]chan ws.TransferenceStatus{},
 		messagesQueue:        []message{},
 		api:                  api.NewAPI(),
 	}
@@ -87,39 +90,43 @@ func (a *app) restoreUserSession() {
 		return
 	}
 
-	commConn, err := a.api.Connect("/api/v1/sessions/connect", token)
+	commConn, err := a.api.Connect("/api/v1/sessions/communication-connect", token)
 
 	if err != nil {
 		return
 	}
 
-	tranConn, err := a.api.Connect("/api/v1/transference/connect", token)
+	tranConn, err := a.api.Connect("/api/v1/sessions/transference-connect", token)
 
 	if err != nil {
 		return
 	}
 
 	a.token = token
-	go a.readPump(a.ctx, commConn, tranConn)
-	go writePump(a.ctx, a.communicationChannel, commConn, tranConn)
 
+	go a.readPump(commConn)
+	go a.binaryReadPump(tranConn)
+	go a.writePump(a.communicationChannel, commConn)
+	go a.binaryWritePump(a.transferenceChannel, tranConn)
 }
 
 func (a *app) storeUserSession(token string) error {
-	commConn, err := a.api.Connect("/api/v1/sessions/connect", token)
+	commConn, err := a.api.Connect("/api/v1/sessions/communication-connect", token)
 
 	if err != nil {
 		return errors.New("Failed to connect communication WebSocket: " + err.Error())
 	}
 
-	tranConn, err := a.api.Connect("/api/v1/transference/connect", token)
+	tranConn, err := a.api.Connect("/api/v1/sessions/transference-connect", token)
 
 	if err != nil {
 		return errors.New("Failed to connect transference WebSocket: " + err.Error())
 	}
 
-	go a.readPump(a.ctx, commConn, tranConn)
-	go writePump(a.ctx, a.communicationChannel, commConn, tranConn)
+	go a.readPump(commConn)
+	go a.binaryReadPump(tranConn)
+	go a.writePump(a.communicationChannel, commConn)
+	go a.binaryWritePump(a.transferenceChannel, tranConn)
 
 	err = keyring.Set(serviceName, userKey, token)
 
@@ -145,4 +152,40 @@ func (a *app) endUserSession() error {
 
 func (a *app) generateMessageID() string {
 	return strconv.Itoa(int(a.totalMessages.Add(1)))
+}
+
+func (u uploads) addUpload(id int, cancelCh chan ws.TransferenceStatus) {
+	u[id] = cancelCh
+}
+
+func (u uploads) removeUpload(id int) {
+	delete(u, id)
+}
+
+func (u uploads) uploadExists(id int) bool {
+	_, exists := u[id]
+	return exists
+}
+
+func (u uploads) getUpload(id int) (chan<- ws.TransferenceStatus, bool) {
+	up, e := u[id]
+	return up, e
+}
+
+func (d downloads) addDownload(id int, ch chan ws.Download) {
+	d[id] = ch
+}
+
+func (d downloads) getDownload(id int) (chan<- ws.Download, bool) {
+	dw, e := d[id]
+	return dw, e
+}
+
+func (d downloads) removeDownload(id int) {
+	delete(d, id)
+}
+
+func (d downloads) downloadExists(id int) bool {
+	_, exists := d[id]
+	return exists
 }

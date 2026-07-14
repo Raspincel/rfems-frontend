@@ -55,7 +55,7 @@ export default function TransferencesList() {
                     {item.status === "completed" && <CheckCircle2 size={14} />}
                     {item.status === "error" && <AlertCircle size={14} />}
                     {item.status === "requesting" && "..."}
-                    {item.status === "progress" && `${item.progress * 0.01}%`}
+                    {item.status === "progress" && `${(item.progress * 100 / item.totalBytes).toFixed(2)}%`}
                   </span>
                 </div>
 
@@ -78,7 +78,7 @@ export default function TransferencesList() {
                             : "bg-purple-500"
                       }`}
                       style={{
-                        width: `${item.status === "completed" ? 100 : Math.max(5, item.progress)}%`,
+                        width: `${item.status === "completed" ? 100 : Math.max(5, item.progress / item.totalBytes)}%`,
                       }}
                     />
                   </div>

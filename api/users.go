@@ -97,7 +97,7 @@ func (a *API) Connect(path, token string) (*websocket.Conn, error) {
 	})
 
 	if err != nil {
-		if res.StatusCode > 400 && res.StatusCode < 500 {
+		if res != nil && res.StatusCode > 400 && res.StatusCode < 500 {
 			defer res.Body.Close()
 			body, _ := io.ReadAll(res.Body)
 

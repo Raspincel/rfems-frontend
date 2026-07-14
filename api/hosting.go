@@ -137,3 +137,67 @@ func (a API) StopHosting(status, token string) Response[any] {
 
 	return apiResponse
 }
+
+type RequestTransferIDResponse struct {
+	ID int
+}
+
+func (a API) RequestTransferID(token, ticket, id string) Response[RequestTransferIDResponse] {
+	values := map[string]string{
+		"ticket":   ticket,
+		"customID": id,
+	}
+
+	jsonData, err := json.Marshal(values)
+
+	if err != nil {
+		return Response[RequestTransferIDResponse]{
+			Success: false,
+			Message: "Failed to marshal stop hosting data",
+		}
+	}
+
+	req, err := http.NewRequest("GET", a.buildURL("/v1/sessions/request-transfer-id"), bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		return Response[RequestTransferIDResponse]{
+			Success: false,
+			Message: "Failed to create request transfer ID request",
+		}
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	resp, err := a.client.Do(req)
+
+	if err != nil {
+		return Response[RequestTransferIDResponse]{
+			Success: false,
+			Message: "Failed to perform request transfer ID request: " + err.Error(),
+		}
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return Response[RequestTransferIDResponse]{
+			Success: false,
+			Message: "Failed to read request transfer ID response body",
+		}
+	}
+
+	var apiResponse Response[RequestTransferIDResponse]
+
+	err = json.Unmarshal(body, &apiResponse)
+
+	if err != nil {
+		return Response[RequestTransferIDResponse]{
+			Success: false,
+			Message: "Failed to parse request transfer ID response: " + err.Error(),
+		}
+	}
+
+	return apiResponse
+}

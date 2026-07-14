@@ -5,7 +5,8 @@ export interface TransferenceState {
       type: "upload" | "download";
       origin: string;
       destination: string;
-      progress: number; // 0 to 10000
+      progress: number;
+      totalBytes: number;
       error: string | null;
     };
   };
@@ -14,8 +15,14 @@ export interface TransferenceState {
 export interface RequestSaveDestinationSelection {
   path: string[];
 }
-export interface SelectSaveDestinationResponse {
+export interface RequestFileDownload {
   id: string;
   destinationPath: string;
   originPath: string;
+  totalBytes: number;
+}
+
+export interface DownloadUpdate {
+  id: string;
+  progress: number;
 }

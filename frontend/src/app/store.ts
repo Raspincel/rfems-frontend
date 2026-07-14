@@ -33,6 +33,8 @@ export type APIReturn<T> = {
 };
 
 export type ThunkConfig = {
+  state: RootState;
+  dispatch: AppDispatch;
   rejectValue: {
     message: string;
     errors?: APIReturn<null>["errors"];

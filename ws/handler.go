@@ -11,12 +11,23 @@ import (
 )
 
 type EventData struct {
-	Msg        []byte
-	GenerateID func() string
-	Ctx        context.Context
-	IsHosting  bool
-	BasePath   string
-	WriteCh    chan<- WriteMessage
+	Msg             []byte
+	GenerateID      func() string
+	Ctx             context.Context
+	IsHosting       bool
+	BasePath        string
+	WriteCh         chan<- WriteMessage
+	WriteTransferCh chan<- []byte
+	AddUpload       func(id int, cancelCh chan TransferenceStatus)
+	RemoveUpload    func(id int)
+	UploadExists    func(id int) bool
+	GetUpload       func(id int) (chan<- TransferenceStatus, bool)
+	GetDownload     func(id int) (chan<- Download, bool)
+}
+
+type BinaryEventData struct {
+	Msg         []byte
+	GetDownload func(id int) (chan<- Download, bool)
 }
 
 type statusUpdate struct {
@@ -66,6 +77,38 @@ type clientLeftSession struct {
 type clientChangedPath struct {
 	Path     string `json:"path"`
 	ClientID string `json:"clientId"`
+}
+
+type requestedFilePath struct {
+	Path string `json:"path"`
+}
+
+type TransferenceStatus string
+
+// "TSC" stands for "Transference Status: Cancelled"
+const (
+	TSCByHost   TransferenceStatus = "By host"
+	TSCByClient                    = "By client"
+	TSCByServer                    = "By server"
+	TSCByError                     = "By error"
+	TSContinue                     = "Continue"
+	TSConcluded                    = "Concluded"
+)
+
+type fileTransference struct {
+	IsLast bool   `json:"isLast"`
+	Bytes  []byte `json:"bytes"`
+	Part   int    `json:"part"`
+}
+
+type continueFileTransference struct {
+	ID uint32 `json:"id"`
+}
+
+type Download struct {
+	Data   []byte
+	Status TransferenceStatus
+	// Part   uint32
 }
 
 func HandleEvent(event *EventData) {
@@ -170,6 +213,79 @@ func HandleEvent(event *EventData) {
 		}
 
 		runtime.EventsEmit(event.Ctx, "session:client_updated_path", updatePath)
+	case "request_file_download":
+		var payload fileRequestPayload
+
+		err := json.Unmarshal(envelope.Payload, &payload)
+
+		if err != nil {
+			fmt.Println("Failed to unmarshal file request payload")
+			return
+		}
+
+		if event.UploadExists(payload.ID) {
+			// TODO: SEND UPLOAD ALREADY IN PROGRESS MESSAGE
+			return
+		}
+
+		go sendRequestedFile(&envelope, &payload, event)
+		// TODO: implement this case on backend
+	case "cancel_upload_to_client":
+		// id := envelope.ID + envelope.Ticket + "upload"
+		// if ch, exists := event.GetUpload(id); exists {
+		// 	ch <- TSCByClient
+		// }
+	case "continue_transfer_file":
+		var payload continueFileTransference
+
+		err := json.Unmarshal(envelope.Payload, &payload)
+
+		if err != nil {
+			fmt.Println("Failed to unmarshal continue transfer file payload")
+			return
+		}
+
+		// todo: make all "id" uint32
+		if ch, exists := event.GetUpload(int(payload.ID)); exists {
+			ch <- TSContinue
+		}
+	}
+}
+
+func HandleBinaryEvent(event *BinaryEventData) {
+	if len(event.Msg) == 0 {
+		fmt.Println("Received empty binary message")
+		return
+	}
+
+	version := uint8(event.Msg[0] >> 4)
+
+	switch version {
+	case 1:
+		id := uint32((event.Msg[0]&0x0F)<<16) |
+			uint32(event.Msg[1]<<8) |
+			uint32(event.Msg[2])
+
+		dw, ok := event.GetDownload(int(id))
+
+		if !ok {
+			fmt.Println("No download channel found for ID", id)
+			return
+		}
+
+		isLast := event.Msg[5]&0x01 == 1
+		var status TransferenceStatus = TSContinue
+
+		if isLast {
+			status = TSConcluded
+		}
+
+		dw <- Download{
+			Data:   event.Msg[6:],
+			Status: status,
+		}
+	default:
+		fmt.Println("Error: version not recognized")
 	}
 }
 

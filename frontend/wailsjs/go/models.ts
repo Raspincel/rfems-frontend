@@ -1,4 +1,4 @@
-export namespace bindings {
+export namespace api {
 	
 	export class ConnectToHostResponse {
 	    ticket: string;
@@ -131,23 +131,7 @@ export namespace bindings {
 		    return a;
 		}
 	}
-	export class RequestFileResponse {
-	    id: string;
-	    destinationPath: string;
-	    originPath: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new RequestFileResponse(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.destinationPath = source["destinationPath"];
-	        this.originPath = source["originPath"];
-	    }
-	}
-	export class UserBasicInfo {
+	export class UserInfoResponse {
 	    name: string;
 	    id: string;
 	    lastActiveAt: string;
@@ -157,7 +141,7 @@ export namespace bindings {
 	    isPublic: boolean;
 	
 	    static createFrom(source: any = {}) {
-	        return new UserBasicInfo(source);
+	        return new UserInfoResponse(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -171,22 +155,22 @@ export namespace bindings {
 	        this.isPublic = source["isPublic"];
 	    }
 	}
-	export class Response___frontend_bindings_UserBasicInfo_ {
+	export class Response___frontend_api_UserInfoResponse_ {
 	    success: boolean;
 	    message: string;
-	    data: UserBasicInfo[];
+	    data: UserInfoResponse[];
 	    meta: Meta;
 	    errors?: Error[];
 	
 	    static createFrom(source: any = {}) {
-	        return new Response___frontend_bindings_UserBasicInfo_(source);
+	        return new Response___frontend_api_UserInfoResponse_(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.success = source["success"];
 	        this.message = source["message"];
-	        this.data = this.convertValues(source["data"], UserBasicInfo);
+	        this.data = this.convertValues(source["data"], UserInfoResponse);
 	        this.meta = this.convertValues(source["meta"], Meta);
 	        this.errors = this.convertValues(source["errors"], Error);
 	    }
@@ -209,7 +193,7 @@ export namespace bindings {
 		    return a;
 		}
 	}
-	export class Response_frontend_bindings_ConnectToHostResponse_ {
+	export class Response_frontend_api_ConnectToHostResponse_ {
 	    success: boolean;
 	    message: string;
 	    data: ConnectToHostResponse;
@@ -217,7 +201,7 @@ export namespace bindings {
 	    errors?: Error[];
 	
 	    static createFrom(source: any = {}) {
-	        return new Response_frontend_bindings_ConnectToHostResponse_(source);
+	        return new Response_frontend_api_ConnectToHostResponse_(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -247,7 +231,7 @@ export namespace bindings {
 		    return a;
 		}
 	}
-	export class Response_frontend_bindings_LoginResponse_ {
+	export class Response_frontend_api_LoginResponse_ {
 	    success: boolean;
 	    message: string;
 	    data: LoginResponse;
@@ -255,7 +239,7 @@ export namespace bindings {
 	    errors?: Error[];
 	
 	    static createFrom(source: any = {}) {
-	        return new Response_frontend_bindings_LoginResponse_(source);
+	        return new Response_frontend_api_LoginResponse_(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -285,7 +269,7 @@ export namespace bindings {
 		    return a;
 		}
 	}
-	export class Response_frontend_bindings_Me_ {
+	export class Response_frontend_api_Me_ {
 	    success: boolean;
 	    message: string;
 	    data: Me;
@@ -293,7 +277,7 @@ export namespace bindings {
 	    errors?: Error[];
 	
 	    static createFrom(source: any = {}) {
-	        return new Response_frontend_bindings_Me_(source);
+	        return new Response_frontend_api_Me_(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -326,7 +310,7 @@ export namespace bindings {
 	export class Response_frontend_bindings_RequestFileResponse_ {
 	    success: boolean;
 	    message: string;
-	    data: RequestFileResponse;
+	    data: bindings.RequestFileResponse;
 	    meta: Meta;
 	    errors?: Error[];
 	
@@ -338,7 +322,7 @@ export namespace bindings {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.success = source["success"];
 	        this.message = source["message"];
-	        this.data = this.convertValues(source["data"], RequestFileResponse);
+	        this.data = this.convertValues(source["data"], bindings.RequestFileResponse);
 	        this.meta = this.convertValues(source["meta"], Meta);
 	        this.errors = this.convertValues(source["errors"], Error);
 	    }
@@ -361,22 +345,10 @@ export namespace bindings {
 		    return a;
 		}
 	}
-	export class SelectedFolder {
-	    path: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new SelectedFolder(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.path = source["path"];
-	    }
-	}
 	export class Response_frontend_bindings_SelectedFolder_ {
 	    success: boolean;
 	    message: string;
-	    data: SelectedFolder;
+	    data: bindings.SelectedFolder;
 	    meta: Meta;
 	    errors?: Error[];
 	
@@ -388,7 +360,7 @@ export namespace bindings {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.success = source["success"];
 	        this.message = source["message"];
-	        this.data = this.convertValues(source["data"], SelectedFolder);
+	        this.data = this.convertValues(source["data"], bindings.SelectedFolder);
 	        this.meta = this.convertValues(source["meta"], Meta);
 	        this.errors = this.convertValues(source["errors"], Error);
 	    }
@@ -449,7 +421,6 @@ export namespace bindings {
 		    return a;
 		}
 	}
-	
 	export class StartHostingRequest {
 	    folderPath: string;
 	    isPublic: boolean;
@@ -462,6 +433,39 @@ export namespace bindings {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.folderPath = source["folderPath"];
 	        this.isPublic = source["isPublic"];
+	    }
+	}
+
+}
+
+export namespace bindings {
+	
+	export class RequestFileResponse {
+	    id: string;
+	    destinationPath: string;
+	    originPath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RequestFileResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.destinationPath = source["destinationPath"];
+	        this.originPath = source["originPath"];
+	    }
+	}
+	export class SelectedFolder {
+	    path: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SelectedFolder(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
 	    }
 	}
 

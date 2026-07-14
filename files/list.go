@@ -13,10 +13,11 @@ type File struct {
 
 func ListFiles(basePath string, path []string) ([]File, error) {
 	root, err := os.OpenRoot(basePath)
-
 	if err != nil {
 		return nil, err
 	}
+
+	defer root.Close()
 
 	fullPath := "." + string(os.PathSeparator) + strings.Join(path, string(os.PathSeparator))
 	targetFolder, err := root.Open(fullPath)

@@ -8,7 +8,7 @@ function App() {
 
   return (
     <>
-      <ToastContainer position="top-right" />
+      <ToastContainer position="bottom-left" />
       <AppRoutes />
     </>
   );

@@ -9,6 +9,10 @@ import {
   updateConnectedUser,
 } from "../features/hosting";
 import { disconnectFromHost, updateFilesList } from "../features/explorer";
+import {
+  completeDownload,
+  updateDownloadProgress,
+} from "../features/transference";
 
 export function useWailsEvents() {
   const dispatch = useDispatch();
@@ -36,6 +40,12 @@ export function useWailsEvents() {
       }),
       EventsOn("session:client_updated_path", (data) => {
         dispatch(updateClientPath(data));
+      }),
+      EventsOn("transference:file-download-update", (data) => {
+        dispatch(updateDownloadProgress(data));
+      }),
+      EventsOn("transference:file-download-completed", (data) => {
+        dispatch(completeDownload(data));
       }),
     ];
 
